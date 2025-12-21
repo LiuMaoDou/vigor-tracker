@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>身体管理系统 (Firebase版)</title>
     <style>
-        /* CSS样式保持不变 */
+        /* CSS样式 */
         * {
             margin: 0;
             padding: 0;
@@ -17,17 +17,26 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            
+            /* =========================================
+               新增：Flex布局实现页面整体居中
+               ========================================= */
+            display: flex;
+            /* margin: auto 在子元素上会处理剩余空间，从而实现垂直和水平居中 */
         }
 
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            /* 修改：margin: auto 配合 body 的 flex 布局实现上下左右居中 */
+            margin: auto; 
+            width: 100%; /* 确保在Flex容器中宽度能撑开 */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
-            min-height: 600px;
+            /* 移除固定的 min-height，让内容自然撑开，或者保持 min-height 但居中 */
+            min-height: 600px; 
             position: relative;
         }
 
@@ -77,18 +86,17 @@
             box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
         }
 
-        /* 修改后的返回按钮样式 */
         .back-btn {
             position: absolute;
             top: 40px;
             left: 40px;
-            width: 42px; /* 改为圆形 */
+            width: 42px;
             height: 42px;
             padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 50%; /* 圆形 */
+            border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
@@ -192,9 +200,8 @@
             flex-wrap: wrap;
         }
 
-        /* 修改：项目名称样式 */
         .project-name {
-            font-size: 18px; /* 修改为 18px */
+            font-size: 18px;
             font-weight: 700;
             background-color: initial;
             background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
@@ -213,11 +220,11 @@
             color: #667eea;
             border: 1px solid rgba(102, 126, 234, 0.2);
             box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
+            white-space: nowrap;
         }
 
-        /* 修改：目标样式 */
         .project-goal {
-            font-size: 18px; /* 修改为 18px */
+            font-size: 18px;
             font-weight: 700;
             background-color: initial;
             background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
@@ -250,21 +257,10 @@
             box-shadow: 0 6px 16px rgba(0,0,0,0.2);
         }
 
-        .progress-0 { 
-            background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); 
-        }
-
-        .progress-low { 
-            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); 
-        }
-
-        .progress-mid { 
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
-        }
-
-        .progress-full { 
-            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); 
-        }
+        .progress-0 { background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); }
+        .progress-low { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); }
+        .progress-mid { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
+        .progress-full { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); }
 
         .delete-btn {
             padding: 8px 18px;
@@ -276,6 +272,7 @@
             font-size: 13px;
             transition: all 0.3s;
             box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);
+            white-space: nowrap;
         }
 
         .delete-btn:hover {
@@ -298,20 +295,11 @@
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 20px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -319,7 +307,6 @@
             color: #555;
             font-size: 14px;
         }
-
         .form-group input {
             width: 100%;
             padding: 12px 16px;
@@ -329,27 +316,15 @@
             transition: all 0.3s;
             background: white;
         }
-
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-        }
-
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        
+        .btn-group { display: flex; gap: 12px; }
         .btn {
             flex: 1;
             padding: 12px 24px;
@@ -360,42 +335,26 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
-
         .btn-secondary {
             background: white;
             color: #666;
             border: 2px solid #e0e0e0;
         }
+        .btn-secondary:hover { background: #f5f5f5; border-color: #ccc; }
 
-        .btn-secondary:hover {
-            background: #f5f5f5;
-            border-color: #ccc;
-        }
+        .page-2 { display: none; }
+        .page-2.show { display: block; }
 
-        /* 第二页样式 */
-        .page-2 {
-            display: none;
-        }
-
-        .page-2.show {
-            display: block;
-        }
-
-        .project-detail {
-            margin: 30px 0;
-        }
-
+        .project-detail { margin: 30px 0; }
         .project-title {
             font-size: 28px;
             font-weight: bold;
@@ -415,13 +374,7 @@
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .detail-item { display: flex; align-items: center; gap: 10px; }
         .detail-label {
             padding: 6px 14px;
             border-radius: 8px;
@@ -432,7 +385,6 @@
             border: 1px solid rgba(102, 126, 234, 0.2);
             box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
         }
-
         .detail-value {
             font-size: 18px;
             font-weight: 700;
@@ -453,7 +405,6 @@
             gap: 15px;
             transition: all 0.3s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            /* 新增：整体内容居中对齐 */
             justify-content: center;
         }
 
@@ -476,15 +427,20 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             flex-wrap: wrap;
-            /* 修改：任务信息内容居中 */
             justify-content: center;
         }
 
-        /* 修改：任务日期和数量样式 */
+        .task-info-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
         .task-date, .task-quantity {
-            font-size: 18px; /* 修改为 18px */
+            font-size: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -500,35 +456,19 @@
             border-radius: 12px;
             border: 2px dashed #667eea;
         }
-
-        .goal-edit-form.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
+        .goal-edit-form.show { display: block; animation: slideDown 0.3s ease; }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #999;
         }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state-text {
-            font-size: 16px;
-        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state-text { font-size: 16px; }
         
-        /* Loading 状态 */
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8);
             z-index: 1000;
             display: flex;
@@ -539,94 +479,43 @@
             font-weight: bold;
         }
 
-        /* =========================================
-           新增：移动端/窄屏响应式优化
-           ========================================= */
+        /* 移动端/窄屏响应式优化 */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
+            .container { padding: 20px; min-height: auto; }
+            .title { font-size: 28px; letter-spacing: 4px; }
 
-            .container {
-                padding: 20px;
-                min-height: auto;
-            }
-
-            .title {
-                font-size: 28px;
-                letter-spacing: 4px;
-            }
-
-            /* 1. 首页项目卡片：由横向变为竖向堆叠 */
             .project-item {
                 flex-direction: column;
-                align-items: center; /* 居中对齐 */
+                align-items: center;
                 text-align: center;
                 gap: 15px;
                 padding: 20px;
             }
-
-            /* 让卡片内部三个区域占满宽度并居中 */
-            .project-left, 
-            .project-center, 
-            .project-right {
+            .project-left, .project-center, .project-right {
                 width: 100%;
-                flex: none; /* 取消 flex: 1 */
+                flex: none;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
             }
-
-            .project-left-content,
-            .project-center-content {
-                justify-content: center;
-            }
-
-            /* 鼠标悬停时的位移效果在手机上可以减弱或取消 */
-            .project-item:hover {
-                transform: none;
-            }
-
-            /* 2. 表单布局：两列变一列 */
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
+            .project-left-content, .project-center-content { justify-content: center; }
+            .project-item:hover { transform: none; }
+            .form-row { flex-direction: column; gap: 0; }
             
-            /* 3. 第二页任务列表：竖向堆叠 */
             .task-item {
                 flex-direction: column;
                 text-align: center;
-                gap: 10px;
+                gap: 15px;
                 padding: 15px;
             }
-
-            .task-info {
-                width: 100%;
-                justify-content: center; /* 确保信息居中 */
-                flex: none;
-            }
-
-            .task-number {
-                margin-bottom: 5px;
-            }
-
-            /* 删除按钮在移动端可能需要更显眼或占满宽 */
-            .delete-btn {
-                margin-top: 5px;
-                width: 100%;
-            }
-
-            /* 调整头部返回按钮位置，避免太靠边 */
-            .back-btn {
-                top: 20px;
-                left: 15px;
-            }
-
-            .header {
-                margin-top: 10px;
-            }
+            .task-number { margin-bottom: 5px; }
+            .task-info { gap: 10px; }
+            
+            .delete-btn { margin-top: 5px; width: 100%; }
+            .back-btn { top: 20px; left: 15px; }
+            .header { margin-top: 10px; }
         }
     </style>
 </head>
@@ -725,15 +614,12 @@
     </div>
 
     <script type="module">
-        // 导入 Firebase 函数
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ==========================================
         // ⚠️ 请在此处替换你的 FIREBASE 配置信息 ⚠️
         // ==========================================
-
-		
         const firebaseConfig = {
 			apiKey: "AIzaSyCW1aiczQg5f7vcrjOyCj041rJcv6iIVKw",
 			authDomain: "vigor-tracker.firebaseapp.com",
@@ -744,36 +630,24 @@
 			measurementId: "G-TZTQFEP62K"
 		  };
 
-        // 初始化 Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        // 为了简单起见，我们使用一个固定的文档ID来存储所有数据
-        // 在实际生产环境中，这通常会关联到用户的 Auth ID
         const DOCUMENT_ID = "my_fitness_data"; 
 
-        // 全局变量
         let projects = [];
         let currentProjectIndex = -1;
         let isEditing = false;
         let isDetailEditing = false;
         const loadingOverlay = document.getElementById('loadingOverlay');
 
-        // ==========================================
-        // 数据操作函数 (Firebase)
-        // ==========================================
-
-        // 加载数据
         async function loadData() {
             try {
                 const docRef = doc(db, "fitness_collection", DOCUMENT_ID);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // 如果云端有数据，使用云端数据
                     projects = docSnap.data().projects || [];
                 } else {
-                    // 如果云端没有数据，初始化示例数据并保存
                     projects = getInitialData();
                     await saveData();
                 }
@@ -782,15 +656,12 @@
                 console.error("加载数据失败:", error);
                 alert("加载数据失败，请检查网络或配置: " + error.message);
             } finally {
-                // 隐藏 loading
                 loadingOverlay.style.display = 'none';
             }
         }
 
-        // 保存数据
         async function saveData() {
             try {
-                // 显示轻微的保存提示或不做处理，这里保持简单
                 const docRef = doc(db, "fitness_collection", DOCUMENT_ID);
                 await setDoc(docRef, { projects: projects });
                 console.log("数据已同步到云端");
@@ -800,7 +671,6 @@
             }
         }
 
-        // 获取初始示例数据
         function getInitialData() {
             return [
                 {
@@ -811,30 +681,16 @@
                         { date: '2024-12-15', quantity: 100 },
                         { date: '2024-12-16', quantity: 120 }
                     ]
-                },
-                {
-                    name: '跑步',
-                    goal: 100,
-                    unit: 'km',
-                    tasks: [
-                        { date: '2024-12-15', quantity: 5 }
-                    ]
                 }
             ];
         }
 
-        // ==========================================
-        // 逻辑函数 (与原版基本一致，但调用 saveData 会触发云端同步)
-        // ==========================================
-
-        // 计算进度
         function calculateProgress(project) {
             if (!project.goal || project.goal === 0) return 0;
             const total = project.tasks.reduce((sum, task) => sum + task.quantity, 0);
             return Math.min(Math.round((total / project.goal) * 100), 100);
         }
 
-        // 获取进度颜色类
         function getProgressClass(progress) {
             if (progress === 0) return 'progress-0';
             if (progress < 60) return 'progress-low';
@@ -842,7 +698,6 @@
             return 'progress-full';
         }
 
-        // 渲染项目列表
         function renderProjects() {
             const projectList = document.getElementById('projectList');
             projectList.innerHTML = '';
@@ -865,53 +720,40 @@
                 const div = document.createElement('div');
                 div.className = 'project-item';
                 
-                // 左侧区域
                 const leftSection = document.createElement('div');
                 leftSection.className = 'project-left';
-                
                 const leftContent = document.createElement('div');
                 leftContent.className = 'project-left-content';
-                
                 const labelBadge = document.createElement('span');
                 labelBadge.className = 'label-badge';
                 labelBadge.textContent = '项目';
-                
                 const name = document.createElement('span');
                 name.className = isCompleted ? 'project-name completed' : 'project-name';
                 name.textContent = project.name;
-                
                 leftContent.appendChild(labelBadge);
                 leftContent.appendChild(name);
                 leftSection.appendChild(leftContent);
                 
-                // 中间区域
                 const centerSection = document.createElement('div');
                 centerSection.className = 'project-center';
-                
                 const centerContent = document.createElement('div');
                 centerContent.className = 'project-center-content';
-                
                 const goalLabelBadge = document.createElement('span');
                 goalLabelBadge.className = 'label-badge';
                 goalLabelBadge.textContent = '目标';
-                
                 const goal = document.createElement('span');
                 goal.className = isCompleted ? 'project-goal completed' : 'project-goal';
                 const unitText = project.unit ? ` ${project.unit}` : '';
                 goal.textContent = `${project.goal}${unitText}`;
-                
                 centerContent.appendChild(goalLabelBadge);
                 centerContent.appendChild(goal);
                 centerSection.appendChild(centerContent);
                 
-                // 右侧区域
                 const rightSection = document.createElement('div');
                 rightSection.className = 'project-right';
-                
                 const progressBadge = document.createElement('div');
                 progressBadge.className = `progress-badge ${progressClass}`;
                 progressBadge.textContent = `${progress}%`;
-                
                 rightSection.appendChild(progressBadge);
                 
                 div.appendChild(leftSection);
@@ -926,7 +768,7 @@
                         e.stopPropagation();
                         if (confirm(`确定要删除"${project.name}"项目吗？`)) {
                             projects.splice(index, 1);
-                            saveData(); // 保存到 Firebase
+                            saveData(); 
                             renderProjects();
                         }
                     };
@@ -934,32 +776,25 @@
                 } else {
                     div.onclick = () => showProjectDetail(index);
                 }
-
                 projectList.appendChild(div);
             });
         }
 
-        // 显示项目详情
-        window.showProjectDetail = function(index) { // 挂载到window以便HTML调用（虽然这里是构建DOM时绑定的）
+        window.showProjectDetail = function(index) {
             currentProjectIndex = index;
             const project = projects[index];
-            
             document.getElementById('detailTitle').textContent = project.name;
             const unitText = project.unit ? ` ${project.unit}` : '';
             document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
-            
             const progress = calculateProgress(project);
             document.getElementById('detailProgress').textContent = `${progress}%`;
-            
             renderTasks();
-            
             document.getElementById('page1').classList.remove('show');
             document.getElementById('page1').style.display = 'none';
             document.getElementById('page2').classList.add('show');
             document.getElementById('page2').style.display = 'block';
         }
 
-        // 渲染任务列表
         function renderTasks() {
             const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';
@@ -985,30 +820,55 @@
                 number.className = 'task-number';
                 number.textContent = index + 1;
                 
+                // 格式化日期：YYYY-MM-DD -> YYYY年MM月DD日
+                let dateStr = task.date;
+                try {
+                    const parts = task.date.split('-');
+                    if (parts.length === 3) {
+                        dateStr = `${parts[0]}年${parts[1]}月${parts[2]}日`;
+                    }
+                } catch (e) {
+                    console.error("Date parse error", e);
+                }
+                
+                // 任务信息容器
                 const info = document.createElement('div');
                 info.className = 'task-info';
                 
+                // 第一组：日期标签 + 日期
+                const dateGroup = document.createElement('div');
+                dateGroup.className = 'task-info-group';
+
                 const dateLabelBadge = document.createElement('span');
                 dateLabelBadge.className = 'label-badge';
                 dateLabelBadge.textContent = '日期';
                 
-                const date = document.createElement('span');
-                date.className = 'task-date';
-                date.textContent = task.date;
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'task-date';
+                dateSpan.textContent = dateStr;
+
+                dateGroup.appendChild(dateLabelBadge);
+                dateGroup.appendChild(dateSpan);
                 
+                // 第二组：数量标签 + 数量
+                const qtyGroup = document.createElement('div');
+                qtyGroup.className = 'task-info-group';
+
                 const quantityLabelBadge = document.createElement('span');
                 quantityLabelBadge.className = 'label-badge';
                 quantityLabelBadge.textContent = '数量';
                 
-                const quantity = document.createElement('span');
-                quantity.className = 'task-quantity';
+                const quantitySpan = document.createElement('span');
+                quantitySpan.className = 'task-quantity';
                 const unitText = project.unit ? ` ${project.unit}` : '';
-                quantity.textContent = `${task.quantity}${unitText}`;
+                quantitySpan.textContent = `${task.quantity}${unitText}`;
                 
-                info.appendChild(dateLabelBadge);
-                info.appendChild(date);
-                info.appendChild(quantityLabelBadge);
-                info.appendChild(quantity);
+                qtyGroup.appendChild(quantityLabelBadge);
+                qtyGroup.appendChild(quantitySpan);
+                
+                // 将两组添加到 info 容器中
+                info.appendChild(dateGroup);
+                info.appendChild(qtyGroup);
                 
                 div.appendChild(number);
                 div.appendChild(info);
@@ -1020,31 +880,27 @@
                     deleteBtn.onclick = () => {
                         if (confirm('确定要删除这条训练记录吗？')) {
                             project.tasks.splice(index, 1);
-                            saveData(); // 保存到 Firebase
+                            saveData();
                             renderTasks();
                             updateProgressDisplay();
                         }
                     };
                     div.appendChild(deleteBtn);
                 }
-
                 taskList.appendChild(div);
             });
         }
 
-        // 更新进度显示
         function updateProgressDisplay() {
             const project = projects[currentProjectIndex];
             const progress = calculateProgress(project);
             document.getElementById('detailProgress').textContent = `${progress}%`;
         }
 
-        // 事件监听
         document.getElementById('editBtn').addEventListener('click', () => {
             isEditing = !isEditing;
             const btn = document.getElementById('editBtn');
             const form = document.getElementById('addProjectForm');
-            
             if (isEditing) {
                 btn.textContent = '✓';
                 btn.classList.add('editing');
@@ -1061,24 +917,11 @@
             const name = document.getElementById('projectName').value.trim();
             const goal = parseInt(document.getElementById('projectGoal').value);
             const unit = document.getElementById('projectUnit').value.trim();
+            if (!name) return alert('请输入项目名称');
+            if (!goal || goal <= 0) return alert('请输入有效的目标数量');
             
-            if (!name) {
-                alert('请输入项目名称');
-                return;
-            }
-            
-            if (!goal || goal <= 0) {
-                alert('请输入有效的目标数量');
-                return;
-            }
-            
-            projects.push({
-                name: name,
-                goal: goal,
-                unit: unit || '',
-                tasks: []
-            });
-            saveData(); // 保存到 Firebase
+            projects.push({ name: name, goal: goal, unit: unit || '', tasks: [] });
+            saveData(); 
             renderProjects();
             document.getElementById('projectName').value = '';
             document.getElementById('projectGoal').value = '';
@@ -1087,9 +930,6 @@
 
         document.getElementById('cancelAddBtn').addEventListener('click', () => {
             document.getElementById('addProjectForm').classList.remove('show');
-            document.getElementById('projectName').value = '';
-            document.getElementById('projectGoal').value = '';
-            document.getElementById('projectUnit').value = '';
         });
 
         document.getElementById('backBtn').addEventListener('click', () => {
@@ -1109,7 +949,6 @@
             const btn = document.getElementById('editDetailBtn');
             const taskForm = document.getElementById('addTaskForm');
             const goalForm = document.getElementById('goalEditForm');
-            
             if (isDetailEditing) {
                 btn.textContent = '✓';
                 btn.classList.add('editing');
@@ -1129,17 +968,13 @@
         document.getElementById('saveGoalBtn').addEventListener('click', () => {
             const newGoal = parseInt(document.getElementById('editGoal').value);
             const newUnit = document.getElementById('editUnit').value.trim();
-            
-            if (!newGoal || newGoal <= 0) {
-                alert('请输入有效的目标数量');
-                return;
-            }
+            if (!newGoal || newGoal <= 0) return alert('请输入有效的目标数量');
             
             projects[currentProjectIndex].goal = newGoal;
             projects[currentProjectIndex].unit = newUnit || '';
             const unitText = newUnit ? ` ${newUnit}` : '';
             document.getElementById('detailGoal').textContent = `${newGoal}${unitText}`;
-            saveData(); // 保存到 Firebase
+            saveData();
             updateProgressDisplay();
         });
 
@@ -1150,23 +985,12 @@
         document.getElementById('addTaskBtn').addEventListener('click', () => {
             const date = document.getElementById('taskDate').value;
             const quantity = parseInt(document.getElementById('taskQuantity').value);
-            
-            if (!date) {
-                alert('请选择日期');
-                return;
-            }
-            
-            if (!quantity || quantity <= 0) {
-                alert('请输入有效的完成数量');
-                return;
-            }
+            if (!date) return alert('请选择日期');
+            if (!quantity || quantity <= 0) return alert('请输入有效的完成数量');
             
             const project = projects[currentProjectIndex];
-            project.tasks.push({
-                date: date,
-                quantity: quantity
-            });
-            saveData(); // 保存到 Firebase
+            project.tasks.push({ date: date, quantity: quantity });
+            saveData();
             renderTasks();
             updateProgressDisplay();
             document.getElementById('taskDate').value = '';
@@ -1175,11 +999,8 @@
 
         document.getElementById('cancelTaskBtn').addEventListener('click', () => {
             document.getElementById('addTaskForm').classList.remove('show');
-            document.getElementById('taskDate').value = '';
-            document.getElementById('taskQuantity').value = '';
         });
 
-        // 启动应用
         loadData();
     </script>
 </body>
