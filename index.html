@@ -77,29 +77,35 @@
             box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
         }
 
+        /* 修改后的返回按钮样式 */
         .back-btn {
             position: absolute;
             top: 40px;
             left: 40px;
-            padding: 10px 20px;
+            width: 42px; /* 改为圆形 */
+            height: 42px;
+            padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 50%; /* 圆形 */
             cursor: pointer;
-            font-size: 16px;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             z-index: 10;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            font-weight: 600;
+        }
+
+        .back-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.5;
         }
 
         .back-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.05);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
@@ -186,10 +192,16 @@
             flex-wrap: wrap;
         }
 
+        /* 修改：项目名称样式 */
         .project-name {
-            font-size: 16px;
-            color: #333;
+            font-size: 18px; /* 修改为 18px */
             font-weight: 700;
+            background-color: initial;
+            background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         .label-badge {
@@ -203,10 +215,16 @@
             box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
         }
 
+        /* 修改：目标样式 */
         .project-goal {
-            font-size: 16px;
-            color: #333;
+            font-size: 18px; /* 修改为 18px */
             font-weight: 700;
+            background-color: initial;
+            background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         .progress-container {
@@ -460,8 +478,9 @@
             flex-wrap: wrap;
         }
 
+        /* 修改：任务日期和数量样式 */
         .task-date, .task-quantity {
-            font-size: 15px;
+            font-size: 18px; /* 修改为 18px */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -552,7 +571,11 @@
     </div>
 
     <div class="container page-2" id="page2">
-        <button class="back-btn" id="backBtn">⬅️ 返回</button>
+        <button class="back-btn" id="backBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
         
         <div class="header">
             <button class="icon-btn" id="editDetailBtn">✏️</button>
