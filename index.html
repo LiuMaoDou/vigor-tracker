@@ -453,6 +453,8 @@
             gap: 15px;
             transition: all 0.3s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            /* 新增：整体内容居中对齐 */
+            justify-content: center;
         }
 
         .task-item:hover {
@@ -476,6 +478,8 @@
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
+            /* 修改：任务信息内容居中 */
+            justify-content: center;
         }
 
         /* 修改：任务日期和数量样式 */
@@ -533,6 +537,96 @@
             font-size: 20px;
             color: #667eea;
             font-weight: bold;
+        }
+
+        /* =========================================
+           新增：移动端/窄屏响应式优化
+           ========================================= */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+                min-height: auto;
+            }
+
+            .title {
+                font-size: 28px;
+                letter-spacing: 4px;
+            }
+
+            /* 1. 首页项目卡片：由横向变为竖向堆叠 */
+            .project-item {
+                flex-direction: column;
+                align-items: center; /* 居中对齐 */
+                text-align: center;
+                gap: 15px;
+                padding: 20px;
+            }
+
+            /* 让卡片内部三个区域占满宽度并居中 */
+            .project-left, 
+            .project-center, 
+            .project-right {
+                width: 100%;
+                flex: none; /* 取消 flex: 1 */
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .project-left-content,
+            .project-center-content {
+                justify-content: center;
+            }
+
+            /* 鼠标悬停时的位移效果在手机上可以减弱或取消 */
+            .project-item:hover {
+                transform: none;
+            }
+
+            /* 2. 表单布局：两列变一列 */
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            /* 3. 第二页任务列表：竖向堆叠 */
+            .task-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .task-info {
+                width: 100%;
+                justify-content: center; /* 确保信息居中 */
+                flex: none;
+            }
+
+            .task-number {
+                margin-bottom: 5px;
+            }
+
+            /* 删除按钮在移动端可能需要更显眼或占满宽 */
+            .delete-btn {
+                margin-top: 5px;
+                width: 100%;
+            }
+
+            /* 调整头部返回按钮位置，避免太靠边 */
+            .back-btn {
+                top: 20px;
+                left: 15px;
+            }
+
+            .header {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
