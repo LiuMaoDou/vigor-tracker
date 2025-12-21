@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>身体管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+        }
+
+        .icon-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .icon-btn.editing {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, 
+                rgba(255,255,255,0) 0%, 
+                rgba(102, 126, 234, 0.6) 20%, 
+                rgba(118, 75, 162, 0.8) 50%, 
+                rgba(102, 126, 234, 0.6) 80%, 
+                rgba(255,255,255,0) 100%);
+            margin: 30px 0;
+            border-radius: 2px;
+        }
+
+        .project-item {
+            padding: 20px 25px;
+            margin: 15px 0;
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .project-item:hover {
+            transform: translateX(5px);
+            border-color: #667eea;
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .project-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .project-left-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .project-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .project-center-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .project-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .project-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 16px;
+            min-width: 30px;
+        }
+
+        .project-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .project-name {
+            font-size: 16px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .label-badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .project-goal {
+            font-size: 16px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 15px;
+            color: white;
+            min-width: 70px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+
+        .progress-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .progress-0 { 
+            background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); 
+        }
+
+        .progress-low { 
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); 
+        }
+
+        .progress-mid { 
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); 
+        }
+
+        .progress-full { 
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); 
+        }
+
+        .delete-btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(245, 87, 108, 0.5);
+        }
+
+        .add-project-form {
+            display: none;
+            margin: 25px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 15px;
+            border: 2px dashed #667eea;
+        }
+
+        .add-project-form.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        /* 第二页样式 */
+        .page-2 {
+            display: none;
+        }
+
+        .page-2.show {
+            display: block;
+        }
+
+        .project-detail {
+            margin: 30px 0;
+        }
+
+        .project-title {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .detail-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .task-item {
+            padding: 18px 22px;
+            margin: 12px 0;
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .task-item:hover {
+            border-color: #667eea;
+            transform: translateX(3px);
+        }
+
+        .task-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            font-size: 15px;
+            min-width: 30px;
+        }
+
+        .task-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .task-date, .task-quantity {
+            font-size: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .goal-edit-form {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 12px;
+            border: 2px dashed #667eea;
+        }
+
+        .goal-edit-form.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一页：总览 -->
+    <div class="container" id="page1">
+        <div class="header">
+            <button class="icon-btn" id="editBtn">✏️</button>
+            <div class="title">自律，专注</div>
+            <div class="divider"></div>
+        </div>
+
+        <div class="add-project-form" id="addProjectForm">
+            <div class="form-group">
+                <label>项目名称</label>
+                <input type="text" id="projectName" placeholder="请输入项目名称，如：俯卧撑">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>目标数量</label>
+                    <input type="number" id="projectGoal" placeholder="请输入目标数量">
+                </div>
+                <div class="form-group">
+                    <label>单位</label>
+                    <input type="text" id="projectUnit" placeholder="如：次、km、个">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="addProjectBtn">添加项目</button>
+                <button class="btn btn-secondary" id="cancelAddBtn">取消</button>
+            </div>
+        </div>
+
+        <div id="projectList"></div>
+    </div>
+
+    <!-- 第二页：项目详情 -->
+    <div class="container page-2" id="page2">
+        <button class="back-btn" id="backBtn">⬅️ 返回</button>
+        
+        <div class="header">
+            <button class="icon-btn" id="editDetailBtn">✏️</button>
+            <div class="project-title" id="detailTitle">项目详情</div>
+        </div>
+
+        <div class="detail-info">
+            <div class="detail-item">
+                <span class="detail-label">目标</span>
+                <span class="detail-value" id="detailGoal">0</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">进度</span>
+                <span class="detail-value" id="detailProgress">0%</span>
+            </div>
+        </div>
+
+        <div class="goal-edit-form" id="goalEditForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>修改目标</label>
+                    <input type="number" id="editGoal" placeholder="请输入新的目标">
+                </div>
+                <div class="form-group">
+                    <label>单位</label>
+                    <input type="text" id="editUnit" placeholder="如：次、km、个">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="saveGoalBtn">保存</button>
+                <button class="btn btn-secondary" id="cancelGoalBtn">取消</button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="add-project-form" id="addTaskForm">
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="taskDate">
+            </div>
+            <div class="form-group">
+                <label>完成数量</label>
+                <input type="number" id="taskQuantity" placeholder="请输入完成数量">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="addTaskBtn">添加任务</button>
+                <button class="btn btn-secondary" id="cancelTaskBtn">取消</button>
+            </div>
+        </div>
+
+        <div id="taskList"></div>
+    </div>
+
+    <script>
+        let projects = [];
+        let currentProjectIndex = -1;
+        let isEditing = false;
+        let isDetailEditing = false;
+
+        // 加载数据
+        function loadData() {
+            const saved = localStorage.getItem('fitnessProjects');
+            if (saved) {
+                projects = JSON.parse(saved);
+            } else {
+                // 预填充示例数据
+                projects = [
+                    {
+                        name: '俯卧撑',
+                        goal: 1000,
+                        unit: '个',
+                        tasks: [
+                            { date: '2024-12-15', quantity: 100 },
+                            { date: '2024-12-16', quantity: 120 },
+                            { date: '2024-12-17', quantity: 80 },
+                            { date: '2024-12-18', quantity: 150 }
+                        ]
+                    },
+                    {
+                        name: '跑步',
+                        goal: 100,
+                        unit: 'km',
+                        tasks: [
+                            { date: '2024-12-15', quantity: 5 },
+                            { date: '2024-12-17', quantity: 8 },
+                            { date: '2024-12-19', quantity: 10 }
+                        ]
+                    },
+                    {
+                        name: '深蹲',
+                        goal: 500,
+                        unit: '次',
+                        tasks: [
+                            { date: '2024-12-16', quantity: 50 },
+                            { date: '2024-12-18', quantity: 60 }
+                        ]
+                    },
+                    {
+                        name: '引体向上',
+                        goal: 300,
+                        unit: '个',
+                        tasks: [
+                            { date: '2024-12-15', quantity: 20 },
+                            { date: '2024-12-16', quantity: 25 },
+                            { date: '2024-12-17', quantity: 30 },
+                            { date: '2024-12-18', quantity: 28 },
+                            { date: '2024-12-19', quantity: 32 },
+                            { date: '2024-12-20', quantity: 35 }
+                        ]
+                    },
+                    {
+                        name: '平板支撑',
+                        goal: 3600,
+                        unit: '秒',
+                        tasks: []
+                    }
+                ];
+                saveData();
+            }
+        }
+
+        // 保存数据
+        function saveData() {
+            localStorage.setItem('fitnessProjects', JSON.stringify(projects));
+        }
+
+        // 计算进度
+        function calculateProgress(project) {
+            if (!project.goal || project.goal === 0) return 0;
+            const total = project.tasks.reduce((sum, task) => sum + task.quantity, 0);
+            return Math.min(Math.round((total / project.goal) * 100), 100);
+        }
+
+        // 获取进度颜色类
+        function getProgressClass(progress) {
+            if (progress === 0) return 'progress-0';
+            if (progress < 60) return 'progress-low';
+            if (progress < 100) return 'progress-mid';
+            return 'progress-full';
+        }
+
+        // 渲染项目列表
+        function renderProjects() {
+            const projectList = document.getElementById('projectList');
+            projectList.innerHTML = '';
+
+            if (projects.length === 0) {
+                projectList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💪</div>
+                        <div class="empty-state-text">还没有健身项目，点击编辑开始添加吧！</div>
+                    </div>
+                `;
+                return;
+            }
+
+            projects.forEach((project, index) => {
+                const progress = calculateProgress(project);
+                const progressClass = getProgressClass(progress);
+                const isCompleted = progress === 100;
+                
+                const div = document.createElement('div');
+                div.className = 'project-item';
+                
+                // 左侧区域
+                const leftSection = document.createElement('div');
+                leftSection.className = 'project-left';
+                
+                const leftContent = document.createElement('div');
+                leftContent.className = 'project-left-content';
+                
+                const labelBadge = document.createElement('span');
+                labelBadge.className = 'label-badge';
+                labelBadge.textContent = '项目';
+                
+                const name = document.createElement('span');
+                name.className = isCompleted ? 'project-name completed' : 'project-name';
+                name.textContent = project.name;
+                
+                leftContent.appendChild(labelBadge);
+                leftContent.appendChild(name);
+                leftSection.appendChild(leftContent);
+                
+                // 中间区域
+                const centerSection = document.createElement('div');
+                centerSection.className = 'project-center';
+                
+                const centerContent = document.createElement('div');
+                centerContent.className = 'project-center-content';
+                
+                const goalLabelBadge = document.createElement('span');
+                goalLabelBadge.className = 'label-badge';
+                goalLabelBadge.textContent = '目标';
+                
+                const goal = document.createElement('span');
+                goal.className = isCompleted ? 'project-goal completed' : 'project-goal';
+                const unitText = project.unit ? ` ${project.unit}` : '';
+                goal.textContent = `${project.goal}${unitText}`;
+                
+                centerContent.appendChild(goalLabelBadge);
+                centerContent.appendChild(goal);
+                centerSection.appendChild(centerContent);
+                
+                // 右侧区域
+                const rightSection = document.createElement('div');
+                rightSection.className = 'project-right';
+                
+                const progressBadge = document.createElement('div');
+                progressBadge.className = `progress-badge ${progressClass}`;
+                progressBadge.textContent = `${progress}%`;
+                
+                rightSection.appendChild(progressBadge);
+                
+                div.appendChild(leftSection);
+                div.appendChild(centerSection);
+                div.appendChild(rightSection);
+
+                if (isEditing) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = '删除';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (confirm(`确定要删除"${project.name}"项目吗？`)) {
+                            projects.splice(index, 1);
+                            saveData();
+                            renderProjects();
+                        }
+                    };
+                    div.appendChild(deleteBtn);
+                } else {
+                    div.onclick = () => showProjectDetail(index);
+                }
+
+                projectList.appendChild(div);
+            });
+        }
+
+        // 显示项目详情
+        function showProjectDetail(index) {
+            currentProjectIndex = index;
+            const project = projects[index];
+            
+            document.getElementById('detailTitle').textContent = project.name;
+            const unitText = project.unit ? ` ${project.unit}` : '';
+            document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
+            
+            const progress = calculateProgress(project);
+            document.getElementById('detailProgress').textContent = `${progress}%`;
+            
+            renderTasks();
+            
+            document.getElementById('page1').classList.remove('show');
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('page2').classList.add('show');
+            document.getElementById('page2').style.display = 'block';
+        }
+
+        // 渲染任务列表
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            const project = projects[currentProjectIndex];
+            if (!project.tasks) project.tasks = [];
+
+            if (project.tasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div class="empty-state-text">还没有训练记录，点击编辑开始记录吧！</div>
+                    </div>
+                `;
+                return;
+            }
+
+            project.tasks.forEach((task, index) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                
+                const number = document.createElement('div');
+                number.className = 'task-number';
+                number.textContent = index + 1;
+                
+                const info = document.createElement('div');
+                info.className = 'task-info';
+                
+                const dateLabelBadge = document.createElement('span');
+                dateLabelBadge.className = 'label-badge';
+                dateLabelBadge.textContent = '日期';
+                
+                const date = document.createElement('span');
+                date.className = 'task-date';
+                date.textContent = task.date;
+                
+                const quantityLabelBadge = document.createElement('span');
+                quantityLabelBadge.className = 'label-badge';
+                quantityLabelBadge.textContent = '数量';
+                
+                const quantity = document.createElement('span');
+                quantity.className = 'task-quantity';
+                const unitText = project.unit ? ` ${project.unit}` : '';
+                quantity.textContent = `${task.quantity}${unitText}`;
+                
+                info.appendChild(dateLabelBadge);
+                info.appendChild(date);
+                info.appendChild(quantityLabelBadge);
+                info.appendChild(quantity);
+                
+                div.appendChild(number);
+                div.appendChild(info);
+
+                if (isDetailEditing) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = '删除';
+                    deleteBtn.onclick = () => {
+                        if (confirm('确定要删除这条训练记录吗？')) {
+                            project.tasks.splice(index, 1);
+                            saveData();
+                            renderTasks();
+                            updateProgressDisplay();
+                        }
+                    };
+                    div.appendChild(deleteBtn);
+                }
+
+                taskList.appendChild(div);
+            });
+        }
+
+        // 更新进度显示
+        function updateProgressDisplay() {
+            const project = projects[currentProjectIndex];
+            const progress = calculateProgress(project);
+            document.getElementById('detailProgress').textContent = `${progress}%`;
+        }
+
+        // 事件监听
+        document.getElementById('editBtn').addEventListener('click', () => {
+            isEditing = !isEditing;
+            const btn = document.getElementById('editBtn');
+            const form = document.getElementById('addProjectForm');
+            
+            if (isEditing) {
+                btn.textContent = '✓';
+                btn.classList.add('editing');
+                form.classList.add('show');
+            } else {
+                btn.textContent = '✏️';
+                btn.classList.remove('editing');
+                form.classList.remove('show');
+            }
+            renderProjects();
+        });
+
+        document.getElementById('addProjectBtn').addEventListener('click', () => {
+            const name = document.getElementById('projectName').value.trim();
+            const goal = parseInt(document.getElementById('projectGoal').value);
+            const unit = document.getElementById('projectUnit').value.trim();
+            
+            if (!name) {
+                alert('请输入项目名称');
+                return;
+            }
+            
+            if (!goal || goal <= 0) {
+                alert('请输入有效的目标数量');
+                return;
+            }
+            
+            projects.push({
+                name: name,
+                goal: goal,
+                unit: unit || '',
+                tasks: []
+            });
+            saveData();
+            renderProjects();
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectGoal').value = '';
+            document.getElementById('projectUnit').value = '';
+        });
+
+        document.getElementById('cancelAddBtn').addEventListener('click', () => {
+            document.getElementById('addProjectForm').classList.remove('show');
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectGoal').value = '';
+            document.getElementById('projectUnit').value = '';
+        });
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('page2').classList.remove('show');
+            document.getElementById('page2').style.display = 'none';
+            document.getElementById('page1').style.display = 'block';
+            isDetailEditing = false;
+            document.getElementById('editDetailBtn').textContent = '✏️';
+            document.getElementById('editDetailBtn').classList.remove('editing');
+            document.getElementById('addTaskForm').classList.remove('show');
+            document.getElementById('goalEditForm').classList.remove('show');
+            renderProjects();
+        });
+
+        document.getElementById('editDetailBtn').addEventListener('click', () => {
+            isDetailEditing = !isDetailEditing;
+            const btn = document.getElementById('editDetailBtn');
+            const taskForm = document.getElementById('addTaskForm');
+            const goalForm = document.getElementById('goalEditForm');
+            
+            if (isDetailEditing) {
+                btn.textContent = '✓';
+                btn.classList.add('editing');
+                taskForm.classList.add('show');
+                goalForm.classList.add('show');
+                document.getElementById('editGoal').value = projects[currentProjectIndex].goal;
+                document.getElementById('editUnit').value = projects[currentProjectIndex].unit || '';
+            } else {
+                btn.textContent = '✏️';
+                btn.classList.remove('editing');
+                taskForm.classList.remove('show');
+                goalForm.classList.remove('show');
+            }
+            renderTasks();
+        });
+
+        document.getElementById('saveGoalBtn').addEventListener('click', () => {
+            const newGoal = parseInt(document.getElementById('editGoal').value);
+            const newUnit = document.getElementById('editUnit').value.trim();
+            
+            if (!newGoal || newGoal <= 0) {
+                alert('请输入有效的目标数量');
+                return;
+            }
+            
+            projects[currentProjectIndex].goal = newGoal;
+            projects[currentProjectIndex].unit = newUnit || '';
+            const unitText = newUnit ? ` ${newUnit}` : '';
+            document.getElementById('detailGoal').textContent = `${newGoal}${unitText}`;
+            saveData();
+            updateProgressDisplay();
+        });
+
+        document.getElementById('cancelGoalBtn').addEventListener('click', () => {
+            document.getElementById('goalEditForm').classList.remove('show');
+        });
+
+        document.getElementById('addTaskBtn').addEventListener('click', () => {
+            const date = document.getElementById('taskDate').value;
+            const quantity = parseInt(document.getElementById('taskQuantity').value);
+            
+            if (!date) {
+                alert('请选择日期');
+                return;
+            }
+            
+            if (!quantity || quantity <= 0) {
+                alert('请输入有效的完成数量');
+                return;
+            }
+            
+            const project = projects[currentProjectIndex];
+            project.tasks.push({
+                date: date,
+                quantity: quantity
+            });
+            saveData();
+            renderTasks();
+            updateProgressDisplay();
+            document.getElementById('taskDate').value = '';
+            document.getElementById('taskQuantity').value = '';
+        });
+
+        document.getElementById('cancelTaskBtn').addEventListener('click', () => {
+            document.getElementById('addTaskForm').classList.remove('show');
+            document.getElementById('taskDate').value = '';
+            document.getElementById('taskQuantity').value = '';
+        });
+
+        // 初始化
+        loadData();
+        renderProjects();
+    </script>
+</body>
+</html>
