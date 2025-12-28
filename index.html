@@ -176,7 +176,7 @@
         .project-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px; /* 增加间距 */
             flex: 1;
             justify-content: flex-end;
         }
@@ -258,22 +258,26 @@
         .progress-mid { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
         .progress-full { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); }
 
-        .delete-btn {
-            padding: 8px 18px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
+        /* 新增：删除图标按钮样式 */
+        .btn-delete-icon {
+            background: none;
             border: none;
-            border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);
-            white-space: nowrap;
+            font-size: 18px;
+            color: #ff6b6b; /* 红色 */
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .delete-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(245, 87, 108, 0.5);
+        .btn-delete-icon:hover {
+            opacity: 1;
+            background-color: rgba(255, 107, 107, 0.1);
+            transform: scale(1.1);
         }
 
         .add-project-form {
@@ -347,7 +351,6 @@
         }
         .btn-secondary:hover { background: #f5f5f5; border-color: #ccc; }
 
-        /* 新增：数据控制区样式 */
         .data-controls {
             margin-top: 30px;
             padding-top: 20px;
@@ -541,7 +544,6 @@
             .task-number { margin-bottom: 5px; }
             .task-info { gap: 10px; }
             
-            .delete-btn { margin-top: 5px; width: 100%; }
             .back-btn { top: 20px; left: 15px; }
             .header { margin-top: 10px; }
             
@@ -555,7 +557,7 @@
 
     <div class="container" id="page1">
         <div class="header">
-            <button class="icon-btn" id="editBtn">✏️</button>
+            <button class="icon-btn" id="editBtn" title="添加新项目">➕</button>
             <div class="title">自律，专注</div>
             <div class="divider"></div>
         </div>
@@ -598,7 +600,7 @@
         </button>
         
         <div class="header">
-            <button class="icon-btn" id="editDetailBtn">✏️</button>
+            <button class="icon-btn" id="editDetailBtn" title="修改目标/添加任务">✏️</button>
             <div class="project-title" id="detailTitle">项目详情</div>
         </div>
 
@@ -658,12 +660,12 @@
         const SUPABASE_URL = "https://ynkxpjmpazmjdjtwpggq.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua3hwam1wYXptamRqdHdwZ2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MjExODEsImV4cCI6MjA4MjQ5NzE4MX0.WHgycb5URS_bzsO6WAgHHrDRAMVKOrnDhTlX7ELvo4w";
         
-        // 注意：这里使用的是 'vigor_tracker' 表
         const TABLE_NAME = "vigor_tracker";
         const ROW_ID = "my_fitness_data"; 
 
         let projects = [];
         let currentProjectIndex = -1;
+        // 这里的 isEditing 等变量仅用于控制表单显示，不再控制删除按钮的显隐
         let isEditing = false;
         let isDetailEditing = false;
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -677,7 +679,6 @@
             alert("无法连接云服务，请检查网络。");
         }
 
-        // 数据加载（使用万能的 'data' 列模式）
         async function loadData() {
             try {
                 const { data: row, error } = await supabase
@@ -687,18 +688,13 @@
                     .single();
 
                 if (error) {
-                    // 如果没有找到数据 (PGRST116)，则初始化
                     if (error.code === 'PGRST116') {
-                        console.log("No data found, initializing...");
                         projects = getInitialData();
-                        await saveData(); // 保存初始数据
+                        await saveData(); 
                     } else {
-                        // 其他错误（可能是表不存在，或者 RLS 没关）
                         console.error("加载数据错误:", error);
-                        alert("加载失败: " + error.message + "\n请检查 Supabase 表 'vigor_tracker' 是否创建并关闭了 RLS。");
                     }
                 } else {
-                    // 成功获取，从 'data' 列中解包 projects
                     if (row && row.data && row.data.projects) {
                         projects = row.data.projects;
                     } else {
@@ -708,18 +704,16 @@
                 renderProjects();
             } catch (error) {
                 console.error("加载异常:", error);
-                alert("加载异常: " + error.message);
             } finally {
                 loadingOverlay.style.display = 'none';
             }
         }
 
-        // 数据保存（打包存入 'data' 列）
         async function saveData() {
             try {
                 const payload = {
                     id: ROW_ID,
-                    data: { projects: projects } // 将整个数组包裹在 data 对象中
+                    data: { projects: projects }
                 };
 
                 const { error } = await supabase
@@ -729,8 +723,6 @@
                 if (error) {
                     console.error("Supabase Save Error:", error);
                     alert("保存失败: " + error.message);
-                } else {
-                    console.log("数据已同步到 Supabase");
                 }
             } catch (error) {
                 console.error("保存异常:", error);
@@ -738,7 +730,6 @@
             }
         }
 
-        // 实时监听（监听 'data' 列的变化）
         if (supabase) {
             supabase.channel('vigor-tracker-realtime')
             .on(
@@ -746,14 +737,9 @@
                 { event: 'UPDATE', schema: 'public', table: TABLE_NAME, filter: `id=eq.${ROW_ID}` },
                 (payload) => {
                     if (payload.new && payload.new.data && payload.new.data.projects) {
-                        console.log("收到云端更新");
                         projects = payload.new.data.projects;
-                        
-                        // 如果正在浏览详情页，刷新当前任务列表
                         if (document.getElementById('page2').classList.contains('show') && currentProjectIndex !== -1) {
-                             // 检查当前项目是否还存在（可能被删除了）
                              if (currentProjectIndex < projects.length) {
-                                 // 更新详情页数据
                                  const project = projects[currentProjectIndex];
                                  const unitText = project.unit ? ` ${project.unit}` : '';
                                  document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
@@ -761,11 +747,9 @@
                                  document.getElementById('detailProgress').textContent = `${progress}%`;
                                  renderTasks();
                              } else {
-                                 // 如果当前项目被删了，退回主页
                                  document.getElementById('backBtn').click();
                              }
                         }
-                        
                         renderProjects();
                     }
                 }
@@ -808,7 +792,7 @@
                 projectList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">💪</div>
-                        <div class="empty-state-text">还没有健身项目，点击编辑开始添加吧！</div>
+                        <div class="empty-state-text">还没有健身项目，点击➕开始添加吧！</div>
                     </div>
                 `;
                 return;
@@ -821,6 +805,9 @@
                 
                 const div = document.createElement('div');
                 div.className = 'project-item';
+                
+                // 绑定点击事件，进入详情页
+                div.onclick = () => showProjectDetail(index);
                 
                 const leftSection = document.createElement('div');
                 leftSection.className = 'project-left';
@@ -857,27 +844,27 @@
                 progressBadge.className = `progress-badge ${progressClass}`;
                 progressBadge.textContent = `${progress}%`;
                 rightSection.appendChild(progressBadge);
+
+                // --- 新增：始终显示的删除按钮 ---
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete-icon';
+                deleteBtn.innerHTML = '🗑️'; 
+                deleteBtn.title = '删除项目';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // 防止触发进入详情页
+                    if (confirm(`确定要删除"${project.name}"项目吗？\n该操作不可恢复！`)) {
+                        projects.splice(index, 1);
+                        saveData(); 
+                        renderProjects();
+                    }
+                };
+                rightSection.appendChild(deleteBtn);
+                // ---------------------------------
                 
                 div.appendChild(leftSection);
                 div.appendChild(centerSection);
                 div.appendChild(rightSection);
 
-                if (isEditing) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.textContent = '删除';
-                    deleteBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        if (confirm(`确定要删除"${project.name}"项目吗？`)) {
-                            projects.splice(index, 1);
-                            saveData(); 
-                            renderProjects();
-                        }
-                    };
-                    div.appendChild(deleteBtn);
-                } else {
-                    div.onclick = () => showProjectDetail(index);
-                }
                 projectList.appendChild(div);
             });
         }
@@ -908,7 +895,7 @@
                 taskList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📝</div>
-                        <div class="empty-state-text">还没有训练记录，点击编辑开始记录吧！</div>
+                        <div class="empty-state-text">还没有训练记录，点击✏️开始记录吧！</div>
                     </div>
                 `;
                 return;
@@ -922,7 +909,6 @@
                 number.className = 'task-number';
                 number.textContent = index + 1;
                 
-                // 格式化日期：YYYY-MM-DD -> YYYY年MM月DD日
                 let dateStr = task.date;
                 try {
                     const parts = task.date.split('-');
@@ -933,62 +919,55 @@
                     console.error("Date parse error", e);
                 }
                 
-                // 任务信息容器
                 const info = document.createElement('div');
                 info.className = 'task-info';
                 
-                // 第一组：日期标签 + 日期
                 const dateGroup = document.createElement('div');
                 dateGroup.className = 'task-info-group';
-
                 const dateLabelBadge = document.createElement('span');
                 dateLabelBadge.className = 'label-badge';
                 dateLabelBadge.textContent = '日期';
-                
                 const dateSpan = document.createElement('span');
                 dateSpan.className = 'task-date';
                 dateSpan.textContent = dateStr;
-
                 dateGroup.appendChild(dateLabelBadge);
                 dateGroup.appendChild(dateSpan);
                 
-                // 第二组：数量标签 + 数量
                 const qtyGroup = document.createElement('div');
                 qtyGroup.className = 'task-info-group';
-
                 const quantityLabelBadge = document.createElement('span');
                 quantityLabelBadge.className = 'label-badge';
                 quantityLabelBadge.textContent = '数量';
-                
                 const quantitySpan = document.createElement('span');
                 quantitySpan.className = 'task-quantity';
                 const unitText = project.unit ? ` ${project.unit}` : '';
                 quantitySpan.textContent = `${task.quantity}${unitText}`;
-                
                 qtyGroup.appendChild(quantityLabelBadge);
                 qtyGroup.appendChild(quantitySpan);
                 
-                // 将两组添加到 info 容器中
                 info.appendChild(dateGroup);
                 info.appendChild(qtyGroup);
                 
                 div.appendChild(number);
                 div.appendChild(info);
 
-                if (isDetailEditing) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.textContent = '删除';
-                    deleteBtn.onclick = () => {
-                        if (confirm('确定要删除这条训练记录吗？')) {
-                            project.tasks.splice(index, 1);
-                            saveData();
-                            renderTasks();
-                            updateProgressDisplay();
-                        }
-                    };
-                    div.appendChild(deleteBtn);
-                }
+                // --- 新增：始终显示的删除按钮 ---
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete-icon';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.title = '删除记录';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm('确定要删除这条训练记录吗？')) {
+                        project.tasks.splice(index, 1);
+                        saveData();
+                        renderTasks();
+                        updateProgressDisplay();
+                    }
+                };
+                div.appendChild(deleteBtn);
+                // ---------------------------------
+
                 taskList.appendChild(div);
             });
         }
@@ -999,20 +978,18 @@
             document.getElementById('detailProgress').textContent = `${progress}%`;
         }
 
+        // 首页右上角按钮：仅控制“添加项目表单”显示
         document.getElementById('editBtn').addEventListener('click', () => {
             isEditing = !isEditing;
             const btn = document.getElementById('editBtn');
             const form = document.getElementById('addProjectForm');
             if (isEditing) {
-                btn.textContent = '✓';
-                btn.classList.add('editing');
+                btn.textContent = '❌'; // 变为取消图标
                 form.classList.add('show');
             } else {
-                btn.textContent = '✏️';
-                btn.classList.remove('editing');
+                btn.textContent = '➕';
                 form.classList.remove('show');
             }
-            renderProjects();
         });
 
         document.getElementById('addProjectBtn').addEventListener('click', () => {
@@ -1028,9 +1005,16 @@
             document.getElementById('projectName').value = '';
             document.getElementById('projectGoal').value = '';
             document.getElementById('projectUnit').value = '';
+            
+            // 提交后自动关闭表单
+            isEditing = false;
+            document.getElementById('editBtn').textContent = '➕';
+            document.getElementById('addProjectForm').classList.remove('show');
         });
 
         document.getElementById('cancelAddBtn').addEventListener('click', () => {
+            isEditing = false;
+            document.getElementById('editBtn').textContent = '➕';
             document.getElementById('addProjectForm').classList.remove('show');
         });
 
@@ -1038,6 +1022,8 @@
             document.getElementById('page2').classList.remove('show');
             document.getElementById('page2').style.display = 'none';
             document.getElementById('page1').style.display = 'block';
+            
+            // 重置详情页编辑状态
             isDetailEditing = false;
             document.getElementById('editDetailBtn').textContent = '✏️';
             document.getElementById('editDetailBtn').classList.remove('editing');
@@ -1046,13 +1032,14 @@
             renderProjects();
         });
 
+        // 详情页右上角按钮：仅控制“添加任务/修改目标表单”显示
         document.getElementById('editDetailBtn').addEventListener('click', () => {
             isDetailEditing = !isDetailEditing;
             const btn = document.getElementById('editDetailBtn');
             const taskForm = document.getElementById('addTaskForm');
             const goalForm = document.getElementById('goalEditForm');
             if (isDetailEditing) {
-                btn.textContent = '✓';
+                btn.textContent = '❌';
                 btn.classList.add('editing');
                 taskForm.classList.add('show');
                 goalForm.classList.add('show');
@@ -1064,7 +1051,6 @@
                 taskForm.classList.remove('show');
                 goalForm.classList.remove('show');
             }
-            renderTasks();
         });
 
         document.getElementById('saveGoalBtn').addEventListener('click', () => {
@@ -1078,10 +1064,13 @@
             document.getElementById('detailGoal').textContent = `${newGoal}${unitText}`;
             saveData();
             updateProgressDisplay();
+            
+            // 保存后关闭表单
+            document.getElementById('editDetailBtn').click();
         });
 
         document.getElementById('cancelGoalBtn').addEventListener('click', () => {
-            document.getElementById('goalEditForm').classList.remove('show');
+            document.getElementById('editDetailBtn').click();
         });
 
         document.getElementById('addTaskBtn').addEventListener('click', () => {
@@ -1097,15 +1086,16 @@
             updateProgressDisplay();
             document.getElementById('taskDate').value = '';
             document.getElementById('taskQuantity').value = '';
+            
+            // 添加后关闭表单
+            document.getElementById('editDetailBtn').click();
         });
 
         document.getElementById('cancelTaskBtn').addEventListener('click', () => {
-            document.getElementById('addTaskForm').classList.remove('show');
+            document.getElementById('editDetailBtn').click();
         });
 
-        // ==========================================
         // 导出功能
-        // ==========================================
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (!projects || projects.length === 0) {
                 alert('暂无数据可导出');
@@ -1128,9 +1118,7 @@
             }
         });
 
-        // ==========================================
         // 导入功能
-        // ==========================================
         document.getElementById('importBtn').addEventListener('click', () => {
             document.getElementById('importInput').click();
         });
@@ -1146,7 +1134,7 @@
                     if (Array.isArray(data)) {
                         if(confirm(`检测到 ${data.length} 个项目。导入将覆盖当前所有数据，确定继续吗？`)) {
                             projects = data;
-                            await saveData(); // 覆盖云端
+                            await saveData(); 
                             renderProjects();
                             alert('✅ 数据导入成功！');
                         }
@@ -1159,7 +1147,6 @@
                 }
             };
             reader.readAsText(file);
-            // 清空 value 允许重复导入同一个文件
             event.target.value = ''; 
         });
 
