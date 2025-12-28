@@ -60,16 +60,18 @@
             width: 42px;
             height: 42px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white; /* 确保 + 号是白色的 */
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 24px; /*稍微调大字体，让 + 号更清晰 */
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1; /* 确保符号垂直居中 */
+            padding-bottom: 2px; /* 微调垂直对齐 */
         }
 
         .icon-btn:hover {
@@ -176,7 +178,7 @@
         .project-right {
             display: flex;
             align-items: center;
-            gap: 15px; /* 增加间距 */
+            gap: 15px; 
             flex: 1;
             justify-content: flex-end;
         }
@@ -258,13 +260,12 @@
         .progress-mid { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
         .progress-full { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); }
 
-        /* 新增：删除图标按钮样式 */
         .btn-delete-icon {
             background: none;
             border: none;
             cursor: pointer;
             font-size: 18px;
-            color: #ff6b6b; /* 红色 */
+            color: #ff6b6b; 
             padding: 8px;
             border-radius: 50%;
             transition: all 0.2s;
@@ -557,7 +558,7 @@
 
     <div class="container" id="page1">
         <div class="header">
-            <button class="icon-btn" id="editBtn" title="添加新项目">➕</button>
+            <button class="icon-btn" id="editBtn" title="添加新项目">+</button>
             <div class="title">自律，专注</div>
             <div class="divider"></div>
         </div>
@@ -665,7 +666,6 @@
 
         let projects = [];
         let currentProjectIndex = -1;
-        // 这里的 isEditing 等变量仅用于控制表单显示，不再控制删除按钮的显隐
         let isEditing = false;
         let isDetailEditing = false;
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -806,7 +806,6 @@
                 const div = document.createElement('div');
                 div.className = 'project-item';
                 
-                // 绑定点击事件，进入详情页
                 div.onclick = () => showProjectDetail(index);
                 
                 const leftSection = document.createElement('div');
@@ -845,13 +844,12 @@
                 progressBadge.textContent = `${progress}%`;
                 rightSection.appendChild(progressBadge);
 
-                // --- 新增：始终显示的删除按钮 ---
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn-delete-icon';
                 deleteBtn.innerHTML = '🗑️'; 
                 deleteBtn.title = '删除项目';
                 deleteBtn.onclick = (e) => {
-                    e.stopPropagation(); // 防止触发进入详情页
+                    e.stopPropagation(); 
                     if (confirm(`确定要删除"${project.name}"项目吗？\n该操作不可恢复！`)) {
                         projects.splice(index, 1);
                         saveData(); 
@@ -859,7 +857,6 @@
                     }
                 };
                 rightSection.appendChild(deleteBtn);
-                // ---------------------------------
                 
                 div.appendChild(leftSection);
                 div.appendChild(centerSection);
@@ -951,7 +948,6 @@
                 div.appendChild(number);
                 div.appendChild(info);
 
-                // --- 新增：始终显示的删除按钮 ---
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn-delete-icon';
                 deleteBtn.innerHTML = '🗑️';
@@ -966,7 +962,6 @@
                     }
                 };
                 div.appendChild(deleteBtn);
-                // ---------------------------------
 
                 taskList.appendChild(div);
             });
@@ -978,16 +973,17 @@
             document.getElementById('detailProgress').textContent = `${progress}%`;
         }
 
-        // 首页右上角按钮：仅控制“添加项目表单”显示
         document.getElementById('editBtn').addEventListener('click', () => {
             isEditing = !isEditing;
             const btn = document.getElementById('editBtn');
             const form = document.getElementById('addProjectForm');
             if (isEditing) {
-                btn.textContent = '❌'; // 变为取消图标
+                // 修改：使用文本 × 而不是 Emoji ❌，确保颜色一致
+                btn.textContent = '×'; 
                 form.classList.add('show');
             } else {
-                btn.textContent = '➕';
+                // 修改：使用文本 + 而不是 Emoji ➕
+                btn.textContent = '+';
                 form.classList.remove('show');
             }
         });
@@ -1006,15 +1002,14 @@
             document.getElementById('projectGoal').value = '';
             document.getElementById('projectUnit').value = '';
             
-            // 提交后自动关闭表单
             isEditing = false;
-            document.getElementById('editBtn').textContent = '➕';
+            document.getElementById('editBtn').textContent = '+';
             document.getElementById('addProjectForm').classList.remove('show');
         });
 
         document.getElementById('cancelAddBtn').addEventListener('click', () => {
             isEditing = false;
-            document.getElementById('editBtn').textContent = '➕';
+            document.getElementById('editBtn').textContent = '+';
             document.getElementById('addProjectForm').classList.remove('show');
         });
 
@@ -1023,7 +1018,6 @@
             document.getElementById('page2').style.display = 'none';
             document.getElementById('page1').style.display = 'block';
             
-            // 重置详情页编辑状态
             isDetailEditing = false;
             document.getElementById('editDetailBtn').textContent = '✏️';
             document.getElementById('editDetailBtn').classList.remove('editing');
@@ -1032,14 +1026,13 @@
             renderProjects();
         });
 
-        // 详情页右上角按钮：仅控制“添加任务/修改目标表单”显示
         document.getElementById('editDetailBtn').addEventListener('click', () => {
             isDetailEditing = !isDetailEditing;
             const btn = document.getElementById('editDetailBtn');
             const taskForm = document.getElementById('addTaskForm');
             const goalForm = document.getElementById('goalEditForm');
             if (isDetailEditing) {
-                btn.textContent = '❌';
+                btn.textContent = '×'; // 使用 ×
                 btn.classList.add('editing');
                 taskForm.classList.add('show');
                 goalForm.classList.add('show');
@@ -1065,7 +1058,6 @@
             saveData();
             updateProgressDisplay();
             
-            // 保存后关闭表单
             document.getElementById('editDetailBtn').click();
         });
 
@@ -1087,7 +1079,6 @@
             document.getElementById('taskDate').value = '';
             document.getElementById('taskQuantity').value = '';
             
-            // 添加后关闭表单
             document.getElementById('editDetailBtn').click();
         });
 
@@ -1095,7 +1086,6 @@
             document.getElementById('editDetailBtn').click();
         });
 
-        // 导出功能
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (!projects || projects.length === 0) {
                 alert('暂无数据可导出');
@@ -1118,7 +1108,6 @@
             }
         });
 
-        // 导入功能
         document.getElementById('importBtn').addEventListener('click', () => {
             document.getElementById('importInput').click();
         });
