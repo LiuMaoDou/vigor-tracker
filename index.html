@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>监控管理系统</title>
+    <title>监控管理系统 - Supabase版</title>
 	
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
@@ -651,61 +651,126 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // 引入 Supabase JS 库
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        // ==========================================
-        // ⚠️ 请在此处替换你的 FIREBASE 配置信息 ⚠️
-        // ==========================================
-        const firebaseConfig = {
-			apiKey: "AIzaSyCW1aiczQg5f7vcrjOyCj041rJcv6iIVKw",
-			authDomain: "vigor-tracker.firebaseapp.com",
-			projectId: "vigor-tracker",
-			storageBucket: "vigor-tracker.firebasestorage.app",
-			messagingSenderId: "456426588106",
-			appId: "1:456426588106:web:9af4e2241766675237f133",
-			measurementId: "G-TZTQFEP62K"
-		  };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const DOCUMENT_ID = "my_fitness_data"; 
+        // Supabase 配置
+        const SUPABASE_URL = "https://ynkxpjmpazmjdjtwpggq.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua3hwam1wYXptamRqdHdwZ2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MjExODEsImV4cCI6MjA4MjQ5NzE4MX0.WHgycb5URS_bzsO6WAgHHrDRAMVKOrnDhTlX7ELvo4w";
+        
+        // 注意：这里使用的是 'vigor_tracker' 表
+        const TABLE_NAME = "vigor_tracker";
+        const ROW_ID = "my_fitness_data"; 
 
         let projects = [];
         let currentProjectIndex = -1;
         let isEditing = false;
         let isDetailEditing = false;
         const loadingOverlay = document.getElementById('loadingOverlay');
+        let supabase = null;
 
+        // 初始化 Supabase
+        try {
+            supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (err) {
+            console.error("Supabase Client Init Error:", err);
+            alert("无法连接云服务，请检查网络。");
+        }
+
+        // 数据加载（使用万能的 'data' 列模式）
         async function loadData() {
             try {
-                const docRef = doc(db, "fitness_collection", DOCUMENT_ID);
-                const docSnap = await getDoc(docRef);
+                const { data: row, error } = await supabase
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .eq('id', ROW_ID)
+                    .single();
 
-                if (docSnap.exists()) {
-                    projects = docSnap.data().projects || [];
+                if (error) {
+                    // 如果没有找到数据 (PGRST116)，则初始化
+                    if (error.code === 'PGRST116') {
+                        console.log("No data found, initializing...");
+                        projects = getInitialData();
+                        await saveData(); // 保存初始数据
+                    } else {
+                        // 其他错误（可能是表不存在，或者 RLS 没关）
+                        console.error("加载数据错误:", error);
+                        alert("加载失败: " + error.message + "\n请检查 Supabase 表 'vigor_tracker' 是否创建并关闭了 RLS。");
+                    }
                 } else {
-                    projects = getInitialData();
-                    await saveData();
+                    // 成功获取，从 'data' 列中解包 projects
+                    if (row && row.data && row.data.projects) {
+                        projects = row.data.projects;
+                    } else {
+                        projects = [];
+                    }
                 }
                 renderProjects();
             } catch (error) {
-                console.error("加载数据失败:", error);
-                alert("加载数据失败，请检查网络或配置: " + error.message);
+                console.error("加载异常:", error);
+                alert("加载异常: " + error.message);
             } finally {
                 loadingOverlay.style.display = 'none';
             }
         }
 
+        // 数据保存（打包存入 'data' 列）
         async function saveData() {
             try {
-                const docRef = doc(db, "fitness_collection", DOCUMENT_ID);
-                await setDoc(docRef, { projects: projects });
-                console.log("数据已同步到云端");
+                const payload = {
+                    id: ROW_ID,
+                    data: { projects: projects } // 将整个数组包裹在 data 对象中
+                };
+
+                const { error } = await supabase
+                    .from(TABLE_NAME)
+                    .upsert(payload);
+
+                if (error) {
+                    console.error("Supabase Save Error:", error);
+                    alert("保存失败: " + error.message);
+                } else {
+                    console.log("数据已同步到 Supabase");
+                }
             } catch (error) {
-                console.error("保存失败:", error);
-                alert("保存失败: " + error.message);
+                console.error("保存异常:", error);
+                alert("保存异常: " + error.message);
             }
+        }
+
+        // 实时监听（监听 'data' 列的变化）
+        if (supabase) {
+            supabase.channel('vigor-tracker-realtime')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: TABLE_NAME, filter: `id=eq.${ROW_ID}` },
+                (payload) => {
+                    if (payload.new && payload.new.data && payload.new.data.projects) {
+                        console.log("收到云端更新");
+                        projects = payload.new.data.projects;
+                        
+                        // 如果正在浏览详情页，刷新当前任务列表
+                        if (document.getElementById('page2').classList.contains('show') && currentProjectIndex !== -1) {
+                             // 检查当前项目是否还存在（可能被删除了）
+                             if (currentProjectIndex < projects.length) {
+                                 // 更新详情页数据
+                                 const project = projects[currentProjectIndex];
+                                 const unitText = project.unit ? ` ${project.unit}` : '';
+                                 document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
+                                 const progress = calculateProgress(project);
+                                 document.getElementById('detailProgress').textContent = `${progress}%`;
+                                 renderTasks();
+                             } else {
+                                 // 如果当前项目被删了，退回主页
+                                 document.getElementById('backBtn').click();
+                             }
+                        }
+                        
+                        renderProjects();
+                    }
+                }
+            )
+            .subscribe();
         }
 
         function getInitialData() {
@@ -1039,7 +1104,7 @@
         });
 
         // ==========================================
-        // 新增：导出功能
+        // 导出功能
         // ==========================================
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (!projects || projects.length === 0) {
@@ -1064,7 +1129,7 @@
         });
 
         // ==========================================
-        // 新增：导入功能
+        // 导入功能
         // ==========================================
         document.getElementById('importBtn').addEventListener('click', () => {
             document.getElementById('importInput').click();
