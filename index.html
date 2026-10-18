@@ -4,577 +4,260 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>以终为始</title>
-	
+
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
+    <script>
+        // Apply the theme before the first paint, including native form controls.
+        try {
+            const preference = localStorage.getItem('vigor-theme');
+            document.documentElement.dataset.theme = ['light', 'dark'].includes(preference)
+                ? preference : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        } catch {
+            document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+    </script>
     <style>
-        /* CSS样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            /* Shared type scale for both themes and every viewport. */
+            --font-family: "Ubuntu", "Yuanti SC", "Microsoft YaHei", "微软雅黑", sans-serif;
+            --font-size-caption: 0.875rem;
+            --font-size-body: 1rem;
+            --font-size-section: 1.25rem;
+            --font-size-metric: 1.5rem;
+            --font-size-title: 2rem;
+            --font-size-entry: calc(var(--font-size-body) + 2px);
+            --font-size-entry-caption: calc(var(--font-size-caption) + 2px);
+            color-scheme: light;
+            --bg: #f2f0eb;
+            --surface: #faf9f6;
+            --surface-hover: #eeede6;
+            --inset: #e8e7df;
+            --text: #343c37;
+            --muted: #6c726b;
+            --line: #dcded5;
+            --accent: #627968;
+            --on-accent: #ffffff;
+            --sage: #839b88;
+            --clay: #ae8977;
+            --blue: #788d9b;
+            --danger: #965c50;
+            --danger-bg: #f1e3df;
+            --shadow: 0 12px 40px #343c3705;
         }
-
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #252a28;
+            --surface: #2f3531;
+            --surface-hover: #373e38;
+            --inset: #414840;
+            --text: #e8e8df;
+            --muted: #b2b8ac;
+            --line: #474f46;
+            --accent: #b1c1a7;
+            --on-accent: #252d25;
+            --sage: #a4b69b;
+            --clay: #c6a08e;
+            --blue: #9bafb9;
+            --danger: #e0aa9a;
+            --danger-bg: #4c3933;
+            --shadow: 0 12px 40px #0000000a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-
-        .container {
-            max-width: 900px;
-            margin: auto; 
-            width: 100%; 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            min-height: 600px; 
-            position: relative;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .title {
-            font-size: 36px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 25px;
-            letter-spacing: 8px;
-        }
-
-        .icon-btn {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; /* 确保 + 号是白色的 */
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 24px; /*稍微调大字体，让 + 号更清晰 */
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1; /* 确保符号垂直居中 */
-            padding-bottom: 2px; /* 微调垂直对齐 */
-        }
-
-        .icon-btn:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .icon-btn.editing {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
-        }
-
-        .back-btn {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            width: 42px;
-            height: 42px;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .back-btn svg {
-            width: 24px;
-            height: 24px;
-            stroke-width: 2.5;
-        }
-
-        .back-btn:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .divider {
-            height: 2px;
-            background: linear-gradient(to right, 
-                rgba(255,255,255,0) 0%, 
-                rgba(102, 126, 234, 0.6) 20%, 
-                rgba(118, 75, 162, 0.8) 50%, 
-                rgba(102, 126, 234, 0.6) 80%, 
-                rgba(255,255,255,0) 100%);
-            margin: 30px 0;
-            border-radius: 2px;
-        }
-
-        .project-item {
-            padding: 20px 25px;
-            margin: 15px 0;
-            background: white;
-            border: 2px solid transparent;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .project-item:hover {
-            transform: translateX(5px);
-            border-color: #667eea;
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.2);
-        }
-
-        .project-left {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .project-left-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .project-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .project-center-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .project-right {
-            display: flex;
-            align-items: center;
-            gap: 15px; 
-            flex: 1;
-            justify-content: flex-end;
-        }
-
-        .project-number {
-            color: #667eea;
-            font-weight: bold;
-            font-size: 16px;
-            min-width: 30px;
-        }
-
-        .project-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .project-name {
-            font-size: 18px;
-            font-weight: 700;
-            background-color: initial;
-            background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .label-badge {
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            color: #667eea;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
-            white-space: nowrap;
-        }
-
-        .project-goal {
-            font-size: 18px;
-            font-weight: 700;
-            background-color: initial;
-            background-image: linear-gradient(135deg, #667EEA 0, #764BA2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .progress-badge {
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 15px;
-            color: white;
-            min-width: 70px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-        }
-
-        .progress-badge:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        }
-
-        .progress-0 { background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%); }
-        .progress-low { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); }
-        .progress-mid { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); }
-        .progress-full { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); }
-
-        .btn-delete-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: #ff6b6b; 
-            padding: 8px;
-            border-radius: 50%;
-            transition: all 0.2s;
-            opacity: 0.7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-delete-icon:hover {
-            opacity: 1;
-            background-color: rgba(255, 107, 107, 0.1);
-            transform: scale(1.1);
-        }
-
-        .add-project-form {
-            display: none;
-            margin: 25px 0;
-            padding: 25px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            border-radius: 15px;
-            border: 2px dashed #667eea;
-        }
-
-        .add-project-form.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s;
-            background: white;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        .form-row { display: flex; gap: 15px; }
-        .form-row .form-group { flex: 1; }
-        
-        .btn-group { display: flex; gap: 12px; }
-        .btn {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-        .btn-secondary {
-            background: white;
-            color: #666;
-            border: 2px solid #e0e0e0;
-        }
-        .btn-secondary:hover { background: #f5f5f5; border-color: #ccc; }
-
-        .data-controls {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px dashed rgba(102, 126, 234, 0.2);
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .btn-data {
-            padding: 10px 20px;
-            font-size: 14px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 20px;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .btn-data:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.15);
-        }
-
+        button, input { font: inherit; font-size: var(--font-size-body); }
+        button { cursor: pointer; }
+        button, input, .project-item { -webkit-tap-highlight-color: transparent; }
+        button { transition: background .18s, color .18s, border-color .18s; }
+        button:disabled { opacity: .55; cursor: wait; }
+        button:focus-visible, .project-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+        svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+        .app-bar { max-width: 1360px; margin: 0 auto; padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .wordmark { font-size: var(--font-size-metric); font-weight: 500; letter-spacing: -0.5px; line-height: 1; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .backup-control { position: relative; }
+        .backup-toggle { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--inset); color: var(--muted); }
+        .backup-toggle:hover, .backup-toggle[aria-expanded="true"] { background: var(--surface); color: var(--text); }
+        .backup-panel { position: absolute; top: calc(100% + 10px); right: 0; min-width: 120px; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); z-index: 100; }
+        .backup-panel button { display: block; width: 100%; min-height: 44px; padding: 8px 18px; border: 0; border-radius: 8px; text-align: left; color: var(--text); background: transparent; }
+        .backup-panel button:hover { background: var(--inset); }
+        .theme-switch { display: flex; border: 1px solid var(--line); border-radius: 30px; padding: 4px; gap: 3px; background: var(--inset); }
+        .theme-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 5px 16px; color: var(--muted); background: transparent; border: 0; border-radius: 24px; font-size: var(--font-size-body); }
+        .theme-switch button[aria-pressed="true"] { color: var(--text); background: var(--surface); box-shadow: 0 1px 4px #0000000a; }
+        .theme-switch button:hover { color: var(--text); }
+        .container { max-width: 1280px; width: calc(100% - 112px); margin: 36px auto 48px; position: relative; }
+        .header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 48px; }
+        .heading-copy { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; min-width: 0; }
+        .title { font-size: var(--font-size-title); font-weight: 600; line-height: 1.3; letter-spacing: 2px; }
+        .subtitle { color: var(--muted); font-size: var(--font-size-body); white-space: nowrap; }
+        .icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 10px 20px; border: 1px solid transparent; border-radius: 12px; color: var(--on-accent); background: var(--accent); white-space: nowrap; font-size: var(--font-size-body); font-weight: 500; }
+        .icon-btn:hover, .btn-primary:hover { filter: brightness(.95); }
+        .section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .section-heading h2 { font-size: calc(var(--font-size-section) + 2px); font-weight: 600; }
+        .section-heading span { color: var(--muted); font-size: var(--font-size-entry-caption); }
+        #projectList, #taskList { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
+        .project-item { --row-accent: var(--clay); display: grid; grid-template-columns: minmax(200px, 1.25fr) minmax(130px, .85fr) minmax(220px, 1.5fr); align-items: center; gap: 24px; padding: 20px 24px; min-height: 88px; cursor: pointer; border-bottom: 1px solid var(--line); transition: background .18s; }
+        .project-item[data-status="not-started"] { --row-accent: var(--blue); }
+        .project-item[data-status="completed"] { --row-accent: var(--sage); }
+        .project-item:last-child, .task-item:last-child { border-bottom: 0; }
+        .project-item:hover { background: var(--surface-hover); }
+        .project-left { display: flex; align-items: center; gap: 20px; min-width: 0; }
+        .project-left::before { content: ''; width: 6px; height: 34px; border-radius: 8px; background: var(--row-accent); flex-shrink: 0; }
+        .project-left-content { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+        .project-name { display: block; min-width: 0; color: var(--row-accent); font-size: calc(var(--font-size-entry) + 4px); font-weight: 600; overflow-wrap: anywhere; }
+        .project-meta { display: block; flex-shrink: 0; white-space: nowrap; color: var(--muted); font-size: var(--font-size-entry-caption); }
+        .project-center-content { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .label-badge { display: inline-flex; align-items: center; flex-shrink: 0; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--inset); color: var(--text); font-size: var(--font-size-entry-caption); line-height: 1.4; white-space: nowrap; }
+        .project-goal { font-size: var(--font-size-entry); font-variant-numeric: tabular-nums; }
+        .project-right { display: flex; align-items: center; gap: 18px; min-width: 0; }
+        .progress-track { flex: 1; min-width: 32px; height: 7px; background: var(--inset); border-radius: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--row-accent); border-radius: inherit; }
+        .progress-badge { min-width: 45px; font-size: var(--font-size-entry); font-variant-numeric: tabular-nums; text-align: right; }
+        .project-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-edit-icon, .btn-delete-icon { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+        .btn-edit-icon svg, .btn-delete-icon svg { width: 17px; height: 17px; }
+        .btn-edit-icon:hover { color: var(--accent); background: var(--inset); border-color: var(--accent); }
+        .btn-delete-icon:hover { color: var(--danger); background: var(--danger-bg); border-color: var(--danger); }
+        [hidden] { display: none !important; }
+        .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 16px; font-size: var(--font-size-body); }
+        .btn-secondary:hover { background: var(--surface); border-color: var(--muted); }
+        .add-project-form { display: none; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin: 24px 0; }
+        .add-project-form.show { display: block; animation: reveal .18s ease; }
+        @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        .form-title { font-size: calc(var(--font-size-section) + 2px); font-weight: 600; margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; min-width: 0; flex: 1; }
+        .form-group label { display: block; font-size: var(--font-size-entry-caption); margin-bottom: 8px; color: var(--muted); }
+        .form-group input { font-size: var(--font-size-entry); width: 100%; min-height: 46px; padding: 10px 14px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; }
+        .form-group input::placeholder { color: var(--muted); opacity: .85; }
+        .form-group input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .form-row { display: flex; gap: 18px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { min-height: 42px; padding: 9px 24px; border-radius: 9px; font-size: var(--font-size-body); }
+        .btn-primary { border: 1px solid transparent; background: var(--accent); color: var(--on-accent); }
         .page-2 { display: none; }
         .page-2.show { display: block; }
+        .back-btn { display: inline-flex; align-items: center; gap: 7px; border: 0; color: var(--muted); background: transparent; margin-bottom: 24px; padding: 4px 0; font-size: var(--font-size-body); }
+        .back-btn:hover { color: var(--text); }
+        .page-2 .header { margin-bottom: 28px; justify-content: flex-start; gap: 12px; flex-wrap: nowrap; align-items: center; }
+        .project-title { min-width: 0; flex: 0 1 auto; font-size: calc(var(--font-size-title) + 2px); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+        .divider { height: 1px; background: var(--line); margin: 28px 0; }
+        .task-item { display: grid; grid-template-columns: 24px minmax(0, 1fr) 36px; align-items: center; gap: 20px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
+        .task-number { color: var(--muted); font-size: var(--font-size-entry-caption); min-width: 22px; font-variant-numeric: tabular-nums; }
+        .task-info { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(150px, .7fr) minmax(240px, 1.4fr); align-items: center; gap: 24px; min-width: 0; }
+        .task-info-group { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; }
+        .task-date, .task-quantity { font-size: var(--font-size-entry); font-variant-numeric: tabular-nums; }
+        .record-progress { min-width: 0; --row-accent: var(--sage); }
+        .record-progress-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 8px; font-size: var(--font-size-entry-caption); font-variant-numeric: tabular-nums; }
+        .record-percentage { font-size: var(--font-size-entry); color: var(--text); }
+        .record-remaining { color: var(--muted); overflow-wrap: anywhere; }
+        .record-progress .progress-track { height: 8px; width: 100%; }
+        .task-quantity, .project-goal { overflow-wrap: anywhere; }
+        .empty-state { padding: 64px 20px; text-align: center; color: var(--muted); }
+        .empty-state-icon { font-size: var(--font-size-title); margin-bottom: 12px; color: var(--sage); }
+        .empty-state-text { font-size: var(--font-size-body); }
+        .loading-overlay { position: fixed; inset: 0; z-index: 1000; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 12px 20px; background: var(--text); color: var(--bg); border-radius: 12px; font-size: var(--font-size-caption); box-shadow: var(--shadow); z-index: 1100; }
+        .toast:empty { display: none; }
+        @media (max-width: 1100px) {
+            .task-info { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 14px 20px; }
+            .record-progress { grid-column: 1 / -1; }
+        }
+        @media (max-width: 1000px) {
+            .container { width: calc(100% - 64px); }
+            .app-bar { padding-inline: 32px; }
+            .project-item { grid-template-columns: minmax(160px, 1.15fr) minmax(100px, .7fr) minmax(200px, 1fr); gap: 16px; padding: 20px; }
+        }
+        @media (max-width: 640px) {
+            .app-bar { padding: 22px 20px; }
 
-        .project-detail { margin: 30px 0; }
-        .project-title {
-            font-size: 28px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+            .header-actions { gap: 8px; }
+            .theme-switch button { padding: 5px 8px; gap: 5px; }
+            .theme-switch svg { width: 17px; height: 17px; }
+            .container { width: calc(100% - 40px); margin-top: 26px; }
+            .header { align-items: flex-start; flex-wrap: wrap; gap: 22px; margin-bottom: 32px; }
 
-        .detail-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        .detail-item { display: flex; align-items: center; gap: 10px; }
-        .detail-label {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            color: #667eea;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            box-shadow: inset 0 1px 3px rgba(102, 126, 234, 0.1);
-        }
-        .detail-value {
-            font-size: 18px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+            .heading-copy { column-gap: 12px; }
+            .heading-copy .title { font-size: var(--font-size-metric); letter-spacing: 1px; }
+            .icon-btn { min-height: 44px; padding: 8px 14px; }
 
-        .task-item {
-            padding: 18px 22px;
-            margin: 12px 0;
-            background: white;
-            border: 2px solid #f0f0f0;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            justify-content: center;
-        }
+            .project-item { grid-template-columns: minmax(0, 1fr) 100px; gap: 12px 16px; padding: 18px 16px; }
+            .project-left { gap: 12px; }
+            .project-left::before { width: 4px; height: 32px; }
 
-        .task-item:hover {
-            border-color: #667eea;
-            transform: translateX(3px);
-        }
+            .project-center-content { gap: 6px; flex-direction: column; align-items: flex-end; }
 
-        .task-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
-            font-size: 15px;
-            min-width: 30px;
-        }
 
-        .task-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .task-info-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-        }
-
-        .task-date, .task-quantity {
-            font-size: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-        }
-
-        .goal-edit-form {
-            display: none;
-            margin: 20px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            border-radius: 12px;
-            border: 2px dashed #667eea;
-        }
-        .goal-edit-form.show { display: block; animation: slideDown 0.3s ease; }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
-        .empty-state-text { font-size: 16px; }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        /* 移动端/窄屏响应式优化 */
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 20px; min-height: auto; }
-            .title { font-size: 28px; letter-spacing: 4px; }
-
-            .project-item {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 15px;
-                padding: 20px;
-            }
-            .project-left, .project-center, .project-right {
-                width: 100%;
-                flex: none;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
-            .project-left-content, .project-center-content { justify-content: center; }
-            .project-item:hover { transform: none; }
+            .project-right { grid-column: 1 / -1; gap: 12px; padding-left: 16px; }
+            .progress-track { height: 6px; }
+            .btn-edit-icon, .btn-delete-icon { width: 34px; height: 34px; }
             .form-row { flex-direction: column; gap: 0; }
-            
-            .task-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-                padding: 15px;
-            }
-            .task-number { margin-bottom: 5px; }
-            .task-info { gap: 10px; }
-            
-            .back-btn { top: 20px; left: 15px; }
-            .header { margin-top: 10px; }
-            
-            .data-controls { flex-direction: column; align-items: center; }
-            .btn-data { width: 100%; justify-content: center; }
+            .add-project-form { padding: 18px; }
+
+            .task-item { grid-template-columns: 18px minmax(0, 1fr) 34px; gap: 12px; padding: 16px; }
+            .task-number { grid-column: 1; grid-row: 1; min-width: 0; }
+            .task-info { display: contents; }
+            .task-info-group { gap: 8px; }
+            .task-info-group:first-child { grid-column: 2; grid-row: 1; }
+            .task-info-group:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+            .task-item > .btn-delete-icon { grid-column: 3; grid-row: 1; }
+            .record-progress { grid-column: 1 / -1; grid-row: 3; }
+            .record-progress-summary { gap: 4px 8px; }
+            .task-date { overflow-wrap: anywhere; }
+
         }
+        .icon-btn.icon-only { width: 36px; height: 36px; min-height: 36px; padding: 0; flex-shrink: 0; border-radius: 10px; }
+        .icon-only.is-open svg { transform: rotate(45deg); }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
 </head>
 <body>
-    <div id="loadingOverlay" class="loading-overlay">正在连接云端数据...</div>
+    <div id="loadingOverlay" class="loading-overlay">正在读取数据库...</div>
 
-    <div class="container" id="page1">
+    <header class="app-bar">
+        <span class="wordmark">Vigor</span>
+        <div class="header-actions">
+        <div class="theme-switch" role="group" aria-label="外观主题">
+            <button type="button" data-theme-choice="light" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>浅色</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 13.2A9 9 0 0 1 10.8 3a9 9 0 1 0 10 10.2Z"/></svg>深色</button>
+        </div>
+        <div class="backup-control" id="backupControl">
+            <button type="button" class="backup-toggle" id="backupToggle" title="备份和恢复" aria-label="备份和恢复" aria-expanded="false" aria-controls="backupPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v5H4zM6 9v11h12V9M10 13h4"/></svg></button>
+            <div class="backup-panel" id="backupPanel" hidden>
+                <button type="button" id="exportBtn">备份</button>
+                <button type="button" id="importBtn">恢复</button>
+            </div>
+        </div>
+        </div>
+        <input type="file" id="importInput" hidden accept=".json,application/json">
+    </header>
+    <main class="container" id="page1">
         <div class="header">
-            <button class="icon-btn" id="editBtn" title="添加新项目">+</button>
-            <div class="title">自律，专注</div>
-            <div class="divider"></div>
+            <div class="heading-copy"><h1 class="title">自律，专注，坚持</h1><p class="subtitle">以终为始</p></div>
         </div>
 
-        <div class="add-project-form" id="addProjectForm">
+        <div class="section-heading"><h2>我的项目</h2><button class="icon-btn icon-only" id="editBtn" title="添加项目" aria-label="添加项目" aria-expanded="false" aria-controls="addProjectForm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button><span id="projectCount"></span></div>
+
+        <div class="add-project-form" id="addProjectForm" role="region" aria-labelledby="projectFormTitle">
+            <h2 class="form-title" id="projectFormTitle">添加项目</h2>
             <div class="form-group">
-                <label>项目名称</label>
+                <label for="projectName">项目名称</label>
                 <input type="text" id="projectName" placeholder="请输入项目名称，如：俯卧撑">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>目标数量</label>
+                    <label for="projectGoal">目标数量</label>
                     <input type="number" id="projectGoal" placeholder="请输入目标数量">
                 </div>
                 <div class="form-group">
-                    <label>单位</label>
+                    <label for="projectUnit">单位</label>
                     <input type="text" id="projectUnit" placeholder="如：次、km、个">
                 </div>
             </div>
@@ -585,190 +268,205 @@
         </div>
 
         <div id="projectList"></div>
+    </main>
 
-        <div class="data-controls">
-            <button class="btn-data" id="exportBtn">📤 导出数据</button>
-            <button class="btn-data" id="importBtn">📥 导入数据</button>
-            <input type="file" id="importInput" style="display: none" accept=".json">
-        </div>
-    </div>
-
-    <div class="container page-2" id="page2">
-        <button class="back-btn" id="backBtn">
+    <main class="container page-2" id="page2">
+        <button class="back-btn" id="backBtn" aria-label="返回项目列表">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 18l-6-6 6-6"/>
-            </svg>
+            </svg>返回项目
         </button>
-        
+
         <div class="header">
-            <button class="icon-btn" id="editDetailBtn" title="修改目标/添加任务">✏️</button>
-            <div class="project-title" id="detailTitle">项目详情</div>
-        </div>
-
-        <div class="detail-info">
-            <div class="detail-item">
-                <span class="detail-label">目标</span>
-                <span class="detail-value" id="detailGoal">0</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">进度</span>
-                <span class="detail-value" id="detailProgress">0%</span>
-            </div>
-        </div>
-
-        <div class="goal-edit-form" id="goalEditForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>修改目标</label>
-                    <input type="number" id="editGoal" placeholder="请输入新的目标">
-                </div>
-                <div class="form-group">
-                    <label>单位</label>
-                    <input type="text" id="editUnit" placeholder="如：次、km、个">
-                </div>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-primary" id="saveGoalBtn">保存</button>
-                <button class="btn btn-secondary" id="cancelGoalBtn">取消</button>
-            </div>
+            <h1 class="project-title" id="detailTitle">项目详情</h1>
+            <button class="icon-btn icon-only" id="addRecordBtn" title="添加记录" aria-label="添加记录" aria-expanded="false" aria-controls="addTaskForm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
         </div>
 
         <div class="divider"></div>
 
         <div class="add-project-form" id="addTaskForm">
             <div class="form-group">
-                <label>日期</label>
+                <label for="taskDate">日期</label>
                 <input type="date" id="taskDate">
             </div>
             <div class="form-group">
-                <label>完成数量</label>
+                <label for="taskQuantity">完成数量</label>
                 <input type="number" id="taskQuantity" placeholder="请输入完成数量">
             </div>
             <div class="btn-group">
-                <button class="btn btn-primary" id="addTaskBtn">添加任务</button>
+                <button class="btn btn-primary" id="addTaskBtn">添加记录</button>
                 <button class="btn btn-secondary" id="cancelTaskBtn">取消</button>
             </div>
         </div>
 
         <div id="taskList"></div>
-    </div>
+    </main>
+    <div id="statusToast" class="toast" role="status" aria-live="polite"></div>
 
     <script type="module">
-        // 引入 Supabase JS 库
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+        const themeButtons = document.querySelectorAll('[data-theme-choice]');
+        const systemTheme = matchMedia('(prefers-color-scheme: dark)');
+        let themePreference = null;
+        try { themePreference = localStorage.getItem('vigor-theme'); } catch { /* Session-only theme if storage is unavailable. */ }
+        function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme)));
+        }
+        applyTheme(document.documentElement.dataset.theme);
+        themeButtons.forEach(button => button.addEventListener('click', () => {
+            themePreference = button.dataset.themeChoice;
+            applyTheme(themePreference);
+            try { localStorage.setItem('vigor-theme', themePreference); } catch { /* Keep the chosen theme for this session. */ }
+        }));
+        systemTheme.addEventListener('change', event => {
+            if (!['light', 'dark'].includes(themePreference)) applyTheme(event.matches ? 'dark' : 'light');
+        });
+        window.addEventListener('storage', event => {
+            if (event.key === 'vigor-theme' || event.key === null) {
+                themePreference = event.newValue;
+                applyTheme(['light', 'dark'].includes(themePreference) ? themePreference : (systemTheme.matches ? 'dark' : 'light'));
+            }
+        });
+        let toastTimeout;
+        function showStatus(message) {
+            clearTimeout(toastTimeout);
+            document.getElementById('statusToast').textContent = message;
+            toastTimeout = setTimeout(() => { document.getElementById('statusToast').textContent = ''; }, 3500);
+        }
+        const deleteIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>';
 
-        // Supabase 配置
-        const SUPABASE_URL = "https://ynkxpjmpazmjdjtwpggq.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua3hwam1wYXptamRqdHdwZ2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MjExODEsImV4cCI6MjA4MjQ5NzE4MX0.WHgycb5URS_bzsO6WAgHHrDRAMVKOrnDhTlX7ELvo4w";
-        
-        const TABLE_NAME = "vigor_tracker";
-        const ROW_ID = "my_fitness_data"; 
+        const editIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>';
 
         let projects = [];
         let currentProjectIndex = -1;
         let isEditing = false;
-        let isDetailEditing = false;
+        let editingProjectIndex = -1;
+        let isAddingRecord = false;
+        let serverRevision = 0;
+        let saving = false;
         const loadingOverlay = document.getElementById('loadingOverlay');
-        let supabase = null;
 
-        // 初始化 Supabase
-        try {
-            supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch (err) {
-            console.error("Supabase Client Init Error:", err);
-            alert("无法连接云服务，请检查网络。");
+        async function requestData(method = 'GET', data) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            try {
+                const response = await fetch('/api/projects', {
+                    method, cache: 'no-store', credentials: 'same-origin', signal: controller.signal,
+                    headers: data === undefined ? {} : { 'Content-Type': 'application/json' },
+                    body: data === undefined ? undefined : JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    const error = new Error(result.error || '数据库请求失败');
+                    error.status = response.status;
+                    throw error;
+                }
+                return result;
+            } finally { clearTimeout(timeout); }
+        }
+
+        // IndexedDB is read only for migration; all ongoing writes go to SQLite.
+        async function readLegacyBrowserData() {
+            if (!window.indexedDB) return null;
+            if (indexedDB.databases) {
+                const databases = await indexedDB.databases();
+                if (!databases.some(database => database.name === 'vigor-tracker')) return null;
+            }
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('vigor-tracker');
+                let missing = false;
+                request.onupgradeneeded = () => {
+                    missing = true;
+                    request.transaction.abort();
+                };
+                request.onerror = () => missing ? resolve(null) : reject(request.error);
+                request.onblocked = () => reject(new Error('请关闭其他旧版本页面后刷新，重试迁移'));
+                request.onsuccess = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains('tracker')) { db.close(); resolve(null); return; }
+                    const transaction = db.transaction('tracker', 'readonly');
+                    const read = transaction.objectStore('tracker').get('projects');
+                    transaction.oncomplete = () => { db.close(); resolve(read.result ?? null); };
+                    transaction.onabort = () => { db.close(); reject(transaction.error || new Error('读取旧浏览器数据失败')); };
+                };
+            });
+        }
+
+        async function migrateLegacyData(state) {
+            // Existing SQLite data always takes precedence; retain the browser copy silently.
+            if (state.initialized) return state;
+            let migratedTo = null;
+            try { migratedTo = localStorage.getItem('vigor-sqlite-migrated-to'); } catch { /* Migration still works without localStorage. */ }
+            if (migratedTo === state.databaseId) return state;
+            try {
+                const legacyProjects = await readLegacyBrowserData();
+                if (legacyProjects === null) return state;
+                validateProjects(legacyProjects);
+                const migrated = await requestData('PUT', { projects: legacyProjects, revision: state.revision });
+                try { localStorage.setItem('vigor-sqlite-migrated-to', state.databaseId); } catch { /* Keep the original browser copy. */ }
+                showStatus('旧浏览器数据已迁移到数据库，原副本已保留');
+                return { ...state, ...migrated, initialized: true };
+            } catch (error) {
+                if (error.status === 409) return await requestData();
+                showStatus('旧浏览器数据尚未迁移，原数据已保留。' + error.message);
+            }
+            return state;
+        }
+
+        function exportProjects(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function validateProjects(data) {
+            if (!Array.isArray(data) || !data.every(project =>
+                project && typeof project.name === 'string' && project.name.trim() &&
+                Number.isFinite(project.goal) && project.goal > 0 &&
+                (project.unit === undefined || typeof project.unit === 'string') &&
+                Array.isArray(project.tasks) && project.tasks.every(task =>
+                    task && typeof task.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(task.date) &&
+                    Number.isFinite(task.quantity) && task.quantity > 0
+                )
+            )) {
+                throw new Error('数据必须是包含有效名称、目标和训练记录的项目数组');
+            }
+            return data;
         }
 
         async function loadData() {
             try {
-                const { data: row, error } = await supabase
-                    .from(TABLE_NAME)
-                    .select('*')
-                    .eq('id', ROW_ID)
-                    .single();
-
-                if (error) {
-                    if (error.code === 'PGRST116') {
-                        projects = getInitialData();
-                        await saveData(); 
-                    } else {
-                        console.error("加载数据错误:", error);
-                    }
-                } else {
-                    if (row && row.data && row.data.projects) {
-                        projects = row.data.projects;
-                    } else {
-                        projects = [];
-                    }
-                }
+                const state = await migrateLegacyData(await requestData());
+                projects = validateProjects(state.projects);
+                serverRevision = state.revision;
                 renderProjects();
-            } catch (error) {
-                console.error("加载异常:", error);
-            } finally {
                 loadingOverlay.style.display = 'none';
-            }
-        }
-
-        async function saveData() {
-            try {
-                const payload = {
-                    id: ROW_ID,
-                    data: { projects: projects }
-                };
-
-                const { error } = await supabase
-                    .from(TABLE_NAME)
-                    .upsert(payload);
-
-                if (error) {
-                    console.error("Supabase Save Error:", error);
-                    alert("保存失败: " + error.message);
-                }
             } catch (error) {
-                console.error("保存异常:", error);
-                alert("保存异常: " + error.message);
+                console.error('读取数据库失败:', error);
+                loadingOverlay.textContent = '无法连接数据库服务，请确认服务已启动后刷新重试。';
             }
         }
 
-        if (supabase) {
-            supabase.channel('vigor-tracker-realtime')
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: TABLE_NAME, filter: `id=eq.${ROW_ID}` },
-                (payload) => {
-                    if (payload.new && payload.new.data && payload.new.data.projects) {
-                        projects = payload.new.data.projects;
-                        if (document.getElementById('page2').classList.contains('show') && currentProjectIndex !== -1) {
-                             if (currentProjectIndex < projects.length) {
-                                 const project = projects[currentProjectIndex];
-                                 const unitText = project.unit ? ` ${project.unit}` : '';
-                                 document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
-                                 const progress = calculateProgress(project);
-                                 document.getElementById('detailProgress').textContent = `${progress}%`;
-                                 renderTasks();
-                             } else {
-                                 document.getElementById('backBtn').click();
-                             }
-                        }
-                        renderProjects();
-                    }
-                }
-            )
-            .subscribe();
-        }
-
-        function getInitialData() {
-            return [
-                {
-                    name: '俯卧撑',
-                    goal: 1000,
-                    unit: '个',
-                    tasks: [
-                        { date: '2024-12-15', quantity: 100 },
-                        { date: '2024-12-16', quantity: 120 }
-                    ]
-                }
-            ];
+        async function saveData(nextProjects) {
+            if (saving) { showStatus('正在保存，请稍候再操作'); return false; }
+            saving = true;
+            try {
+                validateProjects(nextProjects);
+                const result = await requestData('PUT', { projects: nextProjects, revision: serverRevision });
+                projects = validateProjects(result.projects);
+                serverRevision = result.revision;
+                return true;
+            } catch (error) {
+                console.error('数据库保存失败:', error);
+                alert(error.status === 409 ? error.message : '保存未确认，请刷新核对数据库中的数据后重试。' + error.message);
+                return false;
+            } finally { saving = false; }
         }
 
         function calculateProgress(project) {
@@ -787,12 +485,13 @@
         function renderProjects() {
             const projectList = document.getElementById('projectList');
             projectList.innerHTML = '';
+            document.getElementById('projectCount').textContent = `${projects.length} 个项目`;
 
             if (!projects || projects.length === 0) {
                 projectList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">💪</div>
-                        <div class="empty-state-text">还没有健身项目，点击➕开始添加吧！</div>
+                        <div class="empty-state-icon">＋</div>
+                        <div class="empty-state-text">还没有项目，添加一个目标，开始积累。</div>
                     </div>
                 `;
                 return;
@@ -802,26 +501,38 @@
                 const progress = calculateProgress(project);
                 const progressClass = getProgressClass(progress);
                 const isCompleted = progress === 100;
-                
+
                 const div = document.createElement('div');
                 div.className = 'project-item';
-                
+                const total = project.tasks.reduce((sum, task) => sum + task.quantity, 0);
+                div.dataset.status = total === 0 ? 'not-started' : total >= project.goal ? 'completed' : 'in-progress';
+
                 div.onclick = () => showProjectDetail(index);
-                
+                div.tabIndex = 0;
+                div.setAttribute('role', 'group');
+                div.setAttribute('aria-label', `${project.name}，查看项目详情`);
+                div.onkeydown = event => {
+                    if (event.target === div && (event.key === 'Enter' || event.key === ' ')) {
+                        event.preventDefault();
+                        showProjectDetail(index);
+                    }
+                };
+
                 const leftSection = document.createElement('div');
                 leftSection.className = 'project-left';
                 const leftContent = document.createElement('div');
                 leftContent.className = 'project-left-content';
-                const labelBadge = document.createElement('span');
-                labelBadge.className = 'label-badge';
-                labelBadge.textContent = '项目';
                 const name = document.createElement('span');
                 name.className = isCompleted ? 'project-name completed' : 'project-name';
                 name.textContent = project.name;
-                leftContent.appendChild(labelBadge);
+
                 leftContent.appendChild(name);
+                const meta = document.createElement('span');
+                meta.className = 'project-meta';
+                meta.textContent = `${project.tasks.length} 条记录`;
+                leftContent.appendChild(meta);
                 leftSection.appendChild(leftContent);
-                
+
                 const centerSection = document.createElement('div');
                 centerSection.className = 'project-center';
                 const centerContent = document.createElement('div');
@@ -836,28 +547,58 @@
                 centerContent.appendChild(goalLabelBadge);
                 centerContent.appendChild(goal);
                 centerSection.appendChild(centerContent);
-                
+
                 const rightSection = document.createElement('div');
                 rightSection.className = 'project-right';
+                const track = document.createElement('div');
+                track.className = 'progress-track';
+                track.setAttribute('role', 'progressbar');
+                track.setAttribute('aria-label', `${project.name}完成进度`);
+                track.setAttribute('aria-valuemin', '0');
+                track.setAttribute('aria-valuemax', '100');
+                track.setAttribute('aria-valuenow', String(progress));
+                const fill = document.createElement('div');
+                fill.className = 'progress-fill';
+                fill.style.width = `${progress}%`;
+                track.appendChild(fill);
+                rightSection.appendChild(track);
                 const progressBadge = document.createElement('div');
                 progressBadge.className = `progress-badge ${progressClass}`;
                 progressBadge.textContent = `${progress}%`;
                 rightSection.appendChild(progressBadge);
 
+                const actions = document.createElement('div');
+                actions.className = 'project-actions';
+                const editProjectBtn = document.createElement('button');
+                editProjectBtn.className = 'btn-edit-icon';
+                editProjectBtn.innerHTML = editIcon;
+                editProjectBtn.title = '编辑项目';
+                editProjectBtn.setAttribute('aria-label', `编辑${project.name}`);
+                editProjectBtn.onclick = event => {
+                    event.stopPropagation();
+                    openProjectForm(index);
+                };
+                actions.appendChild(editProjectBtn);
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn-delete-icon';
-                deleteBtn.innerHTML = '🗑️'; 
+                deleteBtn.innerHTML = deleteIcon;
                 deleteBtn.title = '删除项目';
-                deleteBtn.onclick = (e) => {
-                    e.stopPropagation(); 
+                deleteBtn.setAttribute('aria-label', `删除${project.name}`);
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
                     if (confirm(`确定要删除"${project.name}"项目吗？\n该操作不可恢复！`)) {
-                        projects.splice(index, 1);
-                        saveData(); 
-                        renderProjects();
+                        const nextProjects = projects.filter((_, i) => i !== index);
+                        if (await saveData(nextProjects)) {
+                            closeProjectForm();
+                            document.getElementById('backBtn').click();
+                            currentProjectIndex = -1;
+                        }
                     }
                 };
-                rightSection.appendChild(deleteBtn);
-                
+                actions.appendChild(deleteBtn);
+                rightSection.appendChild(actions);
+
                 div.appendChild(leftSection);
                 div.appendChild(centerSection);
                 div.appendChild(rightSection);
@@ -867,13 +608,13 @@
         }
 
         window.showProjectDetail = function(index) {
+            closeProjectForm();
+            setRecordFormOpen(false);
+            document.getElementById('taskDate').value = '';
+            document.getElementById('taskQuantity').value = '';
             currentProjectIndex = index;
             const project = projects[index];
             document.getElementById('detailTitle').textContent = project.name;
-            const unitText = project.unit ? ` ${project.unit}` : '';
-            document.getElementById('detailGoal').textContent = `${project.goal}${unitText}`;
-            const progress = calculateProgress(project);
-            document.getElementById('detailProgress').textContent = `${progress}%`;
             renderTasks();
             document.getElementById('page1').classList.remove('show');
             document.getElementById('page1').style.display = 'none';
@@ -884,28 +625,41 @@
         function renderTasks() {
             const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';
-            
+
             const project = projects[currentProjectIndex];
             if (!project.tasks) project.tasks = [];
 
             if (project.tasks.length === 0) {
                 taskList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <div class="empty-state-text">还没有训练记录，点击✏️开始记录吧！</div>
+                        <div class="empty-state-icon">—</div>
+                        <div class="empty-state-text">还没有记录，点击「添加记录」开始吧。</div>
                     </div>
                 `;
                 return;
             }
 
-            project.tasks.forEach((task, index) => {
+            // Accumulate oldest-first, then display newest-first without changing stored indices.
+            let completed = 0;
+            const records = project.tasks.map((task, index) => ({ task, index }))
+                .sort((a, b) => a.task.date.localeCompare(b.task.date) || a.index - b.index)
+                .map(record => {
+                    completed += record.task.quantity;
+                    return {
+                        ...record,
+                        progress: Math.min(completed / project.goal * 100, 100),
+                        remaining: Math.max(project.goal - completed, 0)
+                    };
+                }).reverse();
+
+            records.forEach(({ task, index, progress, remaining }, displayIndex) => {
                 const div = document.createElement('div');
                 div.className = 'task-item';
-                
+
                 const number = document.createElement('div');
                 number.className = 'task-number';
-                number.textContent = index + 1;
-                
+                number.textContent = displayIndex + 1;
+
                 let dateStr = task.date;
                 try {
                     const parts = task.date.split('-');
@@ -915,10 +669,10 @@
                 } catch (e) {
                     console.error("Date parse error", e);
                 }
-                
+
                 const info = document.createElement('div');
                 info.className = 'task-info';
-                
+
                 const dateGroup = document.createElement('div');
                 dateGroup.className = 'task-info-group';
                 const dateLabelBadge = document.createElement('span');
@@ -929,7 +683,7 @@
                 dateSpan.textContent = dateStr;
                 dateGroup.appendChild(dateLabelBadge);
                 dateGroup.appendChild(dateSpan);
-                
+
                 const qtyGroup = document.createElement('div');
                 qtyGroup.className = 'task-info-group';
                 const quantityLabelBadge = document.createElement('span');
@@ -941,24 +695,55 @@
                 quantitySpan.textContent = `${task.quantity}${unitText}`;
                 qtyGroup.appendChild(quantityLabelBadge);
                 qtyGroup.appendChild(quantitySpan);
-                
+
+                const recordProgress = document.createElement('div');
+                recordProgress.className = 'record-progress';
+                const summary = document.createElement('div');
+                summary.className = 'record-progress-summary';
+                const percentage = document.createElement('span');
+                percentage.className = 'record-percentage';
+                const progressText = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 1 }).format(progress);
+                percentage.textContent = `${progressText}%`;
+                const remainingText = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 2 }).format(remaining);
+                const remainingLabel = document.createElement('span');
+                remainingLabel.className = 'record-remaining';
+                remainingLabel.textContent = remaining === 0 ? '已达成目标' : `剩余 ${remainingText}${unitText}`;
+                summary.append(percentage, remainingLabel);
+                const track = document.createElement('div');
+                track.className = 'progress-track';
+                track.setAttribute('role', 'progressbar');
+                track.setAttribute('aria-label', `${task.date}该条记录后的累计进度`);
+                track.setAttribute('aria-valuemin', '0');
+                track.setAttribute('aria-valuemax', '100');
+                track.setAttribute('aria-valuenow', String(progress));
+                track.setAttribute('aria-valuetext', `${progressText}%，${remainingLabel.textContent}`);
+                track.title = '完成这条记录后的累计进度';
+                const fill = document.createElement('div');
+                fill.className = 'progress-fill';
+                fill.style.width = `${progress}%`;
+                track.appendChild(fill);
+                recordProgress.append(summary, track);
+
                 info.appendChild(dateGroup);
                 info.appendChild(qtyGroup);
-                
+                info.appendChild(recordProgress);
+
                 div.appendChild(number);
                 div.appendChild(info);
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn-delete-icon';
-                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.innerHTML = deleteIcon;
                 deleteBtn.title = '删除记录';
-                deleteBtn.onclick = (e) => {
+                deleteBtn.setAttribute('aria-label', `删除${task.date}的记录`);
+                deleteBtn.onclick = async (e) => {
                     e.stopPropagation();
                     if (confirm('确定要删除这条训练记录吗？')) {
-                        project.tasks.splice(index, 1);
-                        saveData();
-                        renderTasks();
-                        updateProgressDisplay();
+                        const nextProjects = structuredClone(projects);
+                        nextProjects[currentProjectIndex].tasks.splice(index, 1);
+                        if (await saveData(nextProjects)) {
+                            renderTasks();
+                        }
                     }
                 };
                 div.appendChild(deleteBtn);
@@ -967,141 +752,140 @@
             });
         }
 
-        function updateProgressDisplay() {
-            const project = projects[currentProjectIndex];
-            const progress = calculateProgress(project);
-            document.getElementById('detailProgress').textContent = `${progress}%`;
+        function openProjectForm(index = -1) {
+            editingProjectIndex = index;
+            isEditing = true;
+            const project = index === -1 ? null : projects[index];
+            document.getElementById('projectFormTitle').textContent = project ? '编辑项目' : '添加项目';
+            document.getElementById('projectName').value = project?.name ?? '';
+            document.getElementById('projectGoal').value = project?.goal ?? '';
+            document.getElementById('projectUnit').value = project?.unit ?? '';
+            document.getElementById('addProjectBtn').textContent = project ? '保存修改' : '添加项目';
+            const button = document.getElementById('editBtn');
+            button.classList.toggle('is-open', !project);
+            button.title = project ? '添加项目' : '收起项目表单';
+            button.setAttribute('aria-label', button.title);
+            document.getElementById('editBtn').setAttribute('aria-expanded', 'true');
+            const form = document.getElementById('addProjectForm');
+            form.classList.add('show');
+            form.scrollIntoView({ block: 'nearest' });
+            document.getElementById('projectName').focus({ preventScroll: true });
+        }
+
+        function closeProjectForm() {
+            isEditing = false;
+            editingProjectIndex = -1;
+            const button = document.getElementById('editBtn');
+            button.classList.remove('is-open');
+            button.title = '添加项目';
+            button.setAttribute('aria-label', button.title);
+            document.getElementById('editBtn').setAttribute('aria-expanded', 'false');
+            document.getElementById('addProjectForm').classList.remove('show');
         }
 
         document.getElementById('editBtn').addEventListener('click', () => {
-            isEditing = !isEditing;
-            const btn = document.getElementById('editBtn');
-            const form = document.getElementById('addProjectForm');
-            if (isEditing) {
-                // 修改：使用文本 × 而不是 Emoji ❌，确保颜色一致
-                btn.textContent = '×'; 
-                form.classList.add('show');
-            } else {
-                // 修改：使用文本 + 而不是 Emoji ➕
-                btn.textContent = '+';
-                form.classList.remove('show');
-            }
+            if (isEditing && editingProjectIndex === -1) closeProjectForm();
+            else openProjectForm();
         });
 
-        document.getElementById('addProjectBtn').addEventListener('click', () => {
+        document.getElementById('addProjectBtn').addEventListener('click', async event => {
             const name = document.getElementById('projectName').value.trim();
             const goal = parseInt(document.getElementById('projectGoal').value);
             const unit = document.getElementById('projectUnit').value.trim();
             if (!name) return alert('请输入项目名称');
             if (!goal || goal <= 0) return alert('请输入有效的目标数量');
-            
-            projects.push({ name: name, goal: goal, unit: unit || '', tasks: [] });
-            saveData(); 
-            renderProjects();
-            document.getElementById('projectName').value = '';
-            document.getElementById('projectGoal').value = '';
-            document.getElementById('projectUnit').value = '';
-            
-            isEditing = false;
-            document.getElementById('editBtn').textContent = '+';
-            document.getElementById('addProjectForm').classList.remove('show');
+
+            const nextProjects = structuredClone(projects);
+            const editing = editingProjectIndex !== -1;
+            if (editing) {
+                Object.assign(nextProjects[editingProjectIndex], { name, goal, unit });
+            } else {
+                nextProjects.push({ name, goal, unit, tasks: [] });
+            }
+            const button = event.currentTarget;
+            button.disabled = true;
+            try {
+                if (!await saveData(nextProjects)) return;
+                closeProjectForm();
+                renderProjects();
+                showStatus(editing ? '项目已更新' : '项目已添加');
+            } finally { button.disabled = false; }
         });
 
-        document.getElementById('cancelAddBtn').addEventListener('click', () => {
-            isEditing = false;
-            document.getElementById('editBtn').textContent = '+';
-            document.getElementById('addProjectForm').classList.remove('show');
-        });
+        document.getElementById('cancelAddBtn').addEventListener('click', closeProjectForm);
+
+        function setRecordFormOpen(open) {
+            isAddingRecord = open;
+            const button = document.getElementById('addRecordBtn');
+            button.classList.toggle('is-open', open);
+            button.title = open ? '收起记录表单' : '添加记录';
+            button.setAttribute('aria-label', button.title);
+            button.setAttribute('aria-expanded', String(open));
+            document.getElementById('addTaskForm').classList.toggle('show', open);
+        }
 
         document.getElementById('backBtn').addEventListener('click', () => {
             document.getElementById('page2').classList.remove('show');
             document.getElementById('page2').style.display = 'none';
             document.getElementById('page1').style.display = 'block';
-            
-            isDetailEditing = false;
-            document.getElementById('editDetailBtn').textContent = '✏️';
-            document.getElementById('editDetailBtn').classList.remove('editing');
-            document.getElementById('addTaskForm').classList.remove('show');
-            document.getElementById('goalEditForm').classList.remove('show');
+            setRecordFormOpen(false);
             renderProjects();
         });
 
-        document.getElementById('editDetailBtn').addEventListener('click', () => {
-            isDetailEditing = !isDetailEditing;
-            const btn = document.getElementById('editDetailBtn');
-            const taskForm = document.getElementById('addTaskForm');
-            const goalForm = document.getElementById('goalEditForm');
-            if (isDetailEditing) {
-                btn.textContent = '×'; // 使用 ×
-                btn.classList.add('editing');
-                taskForm.classList.add('show');
-                goalForm.classList.add('show');
-                document.getElementById('editGoal').value = projects[currentProjectIndex].goal;
-                document.getElementById('editUnit').value = projects[currentProjectIndex].unit || '';
-            } else {
-                btn.textContent = '✏️';
-                btn.classList.remove('editing');
-                taskForm.classList.remove('show');
-                goalForm.classList.remove('show');
-            }
+        document.getElementById('addRecordBtn').addEventListener('click', () => {
+            setRecordFormOpen(!isAddingRecord);
         });
 
-        document.getElementById('saveGoalBtn').addEventListener('click', () => {
-            const newGoal = parseInt(document.getElementById('editGoal').value);
-            const newUnit = document.getElementById('editUnit').value.trim();
-            if (!newGoal || newGoal <= 0) return alert('请输入有效的目标数量');
-            
-            projects[currentProjectIndex].goal = newGoal;
-            projects[currentProjectIndex].unit = newUnit || '';
-            const unitText = newUnit ? ` ${newUnit}` : '';
-            document.getElementById('detailGoal').textContent = `${newGoal}${unitText}`;
-            saveData();
-            updateProgressDisplay();
-            
-            document.getElementById('editDetailBtn').click();
-        });
-
-        document.getElementById('cancelGoalBtn').addEventListener('click', () => {
-            document.getElementById('editDetailBtn').click();
-        });
-
-        document.getElementById('addTaskBtn').addEventListener('click', () => {
+        document.getElementById('addTaskBtn').addEventListener('click', async () => {
             const date = document.getElementById('taskDate').value;
             const quantity = parseInt(document.getElementById('taskQuantity').value);
             if (!date) return alert('请选择日期');
             if (!quantity || quantity <= 0) return alert('请输入有效的完成数量');
-            
-            const project = projects[currentProjectIndex];
-            project.tasks.push({ date: date, quantity: quantity });
-            saveData();
+
+            const nextProjects = structuredClone(projects);
+            nextProjects[currentProjectIndex].tasks.push({ date, quantity });
+            if (!await saveData(nextProjects)) return;
             renderTasks();
-            updateProgressDisplay();
             document.getElementById('taskDate').value = '';
             document.getElementById('taskQuantity').value = '';
-            
-            document.getElementById('editDetailBtn').click();
+
+            setRecordFormOpen(false);
         });
 
         document.getElementById('cancelTaskBtn').addEventListener('click', () => {
-            document.getElementById('editDetailBtn').click();
+            setRecordFormOpen(false);
+        });
+
+        const backupControl = document.getElementById('backupControl');
+        const backupToggle = document.getElementById('backupToggle');
+        const backupPanel = document.getElementById('backupPanel');
+        function setBackupOpen(open) {
+            backupPanel.hidden = !open;
+            backupToggle.setAttribute('aria-expanded', String(open));
+        }
+        backupToggle.addEventListener('click', () => setBackupOpen(backupPanel.hidden));
+        document.addEventListener('click', event => {
+            if (!backupControl.contains(event.target)) setBackupOpen(false);
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !backupPanel.hidden) {
+                setBackupOpen(false);
+                backupToggle.focus();
+            }
+        });
+        backupControl.addEventListener('focusout', event => {
+            if (!backupControl.contains(event.relatedTarget)) setBackupOpen(false);
         });
 
         document.getElementById('exportBtn').addEventListener('click', () => {
+            setBackupOpen(false);
+            backupToggle.focus();
             if (!projects || projects.length === 0) {
                 alert('暂无数据可导出');
                 return;
             }
             try {
-                const dataStr = JSON.stringify(projects, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `vigor-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                exportProjects(projects, `vigor-tracker-backup-${new Date().toISOString().slice(0,10)}.json`);
             } catch (e) {
                 console.error("Export error:", e);
                 alert("导出失败: " + e.message);
@@ -1109,6 +893,8 @@
         });
 
         document.getElementById('importBtn').addEventListener('click', () => {
+            setBackupOpen(false);
+            backupToggle.focus();
             document.getElementById('importInput').click();
         });
 
@@ -1119,12 +905,13 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
-                    const data = JSON.parse(e.target.result);
+                    const data = validateProjects(JSON.parse(e.target.result));
                     if (Array.isArray(data)) {
                         if(confirm(`检测到 ${data.length} 个项目。导入将覆盖当前所有数据，确定继续吗？`)) {
-                            projects = data;
-                            await saveData(); 
-                            renderProjects();
+                            if (!await saveData(data)) return;
+                            closeProjectForm();
+                            document.getElementById('backBtn').click();
+                            currentProjectIndex = -1;
                             alert('✅ 数据导入成功！');
                         }
                     } else {
@@ -1136,7 +923,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; 
+            event.target.value = '';
         });
 
         loadData();

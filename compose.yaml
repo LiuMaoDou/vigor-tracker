@@ -1,0 +1,15 @@
+services:
+  vigor:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      VIGOR_DB_PATH: /data/vigor.sqlite
+      VIGOR_USERNAME: ${VIGOR_USERNAME:?Set VIGOR_USERNAME in .env}
+      VIGOR_PASSWORD: ${VIGOR_PASSWORD:?Set VIGOR_PASSWORD in .env}
+    volumes:
+      - vigor-data:/data
+
+volumes:
+  vigor-data:
