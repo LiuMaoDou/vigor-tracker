@@ -1,4 +1,3 @@
-import base64
 from concurrent.futures import ThreadPoolExecutor
 import io
 import json
@@ -108,13 +107,15 @@ class StorageTests(unittest.TestCase):
         self.assertEqual(self.request(method="PUT", data=body, headers={"CONTENT_TYPE": "text/plain"})["status"], 415)
         self.assertEqual(self.request(method="PUT", data=body, headers={"HTTP_ORIGIN": "http://127.0.0.1:8765"})["status"], 200)
 
-    def test_cloud_auth_covers_api_and_page(self):
-        secured = Application(self.path, "test-user", "test-password")
+    def test_page_and_api_need_no_authentication(self):
         for path in ("/", "/api/projects", "/api/health"):
-            self.assertEqual(self.request(path, application=secured)["status"], 401)
-        auth = "Basic " + base64.b64encode(b"test-user:test-password").decode()
-        self.assertEqual(self.request(headers={"HTTP_AUTHORIZATION": auth}, application=secured)["status"], 200)
-        self.assertEqual(self.request(headers={"HTTP_AUTHORIZATION": "Basic !!!"}, application=secured)["status"], 401)
+            for headers in ({}, {"HTTP_AUTHORIZATION": "Basic !!!"}):
+                response = self.request(path, headers=headers)
+                self.assertEqual(response["status"], 200)
+                self.assertNotIn("WWW-Authenticate", response["headers"])
+        response = self.request(method="PUT", data={"projects": PROJECTS, "revision": 0})
+        self.assertEqual(response["status"], 200)
+        self.assertEqual(self.app.store.read()["projects"], PROJECTS)
 
 
 if __name__ == "__main__":

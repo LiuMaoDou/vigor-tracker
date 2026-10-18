@@ -65,12 +65,10 @@ Keep a copy of the backup before using it as the live database. Avoid copying on
 The app needs a server process and persistent disk; static-only hosting is insufficient. The included container runs Gunicorn as a non-root user and stores SQLite in a persistent named volume. The Compose port is bound to loopback for use behind an HTTPS reverse proxy.
 
 ```sh
-cp .env.example .env
-# Fill in VIGOR_USERNAME and VIGOR_PASSWORD in .env.
 docker compose up -d --build
 ```
 
-Point your HTTPS reverse proxy at `127.0.0.1:8765` and preserve the original `Host` header. The browser's native sign-in prompt protects both the page and API with the configured credentials. Keep one app instance attached to the SQLite volume; do not share the file across unrelated hosts or network filesystems. Container recreation keeps the named volume; `docker compose down -v` deletes it.
+Point your HTTPS reverse proxy at `127.0.0.1:8765` and preserve the original `Host` header. The app has no login or authentication: anyone who can reach it can view and modify all projects and records. Keep one app instance attached to the SQLite volume; do not share the file across unrelated hosts or network filesystems. Container recreation keeps the named volume; `docker compose down -v` deletes it.
 
 To move the local database into a new cloud deployment:
 
@@ -87,7 +85,7 @@ To move the local database into a new cloud deployment:
 
    This deliberately fails if a target database already exists. For an existing deployment, use JSON import after reviewing a backup.
 
-Without Docker, create a virtual environment, install `requirements.txt`, set `VIGOR_DB_PATH`, `VIGOR_USERNAME`, and `VIGOR_PASSWORD`, and run Gunicorn behind your HTTPS proxy:
+Without Docker, create a virtual environment, install `requirements.txt`, set `VIGOR_DB_PATH`, and run Gunicorn behind your HTTPS proxy:
 
 ```sh
 gunicorn --bind 127.0.0.1:8765 --workers 1 --threads 4 server:app
@@ -101,4 +99,4 @@ Use a process manager such as systemd to restart it after a reboot. `python3 ser
 python3 -m unittest discover -s tests -v
 ```
 
-The tests cover real SQLite persistence, backup integrity, concurrent writes, stale revisions, invalid input, delete-all behavior, asset isolation, request origin checks, and optional authentication.
+The tests cover real SQLite persistence, backup integrity, concurrent writes, stale revisions, invalid input, delete-all behavior, asset isolation, request origin checks, and access without authentication.

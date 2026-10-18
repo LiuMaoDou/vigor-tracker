@@ -5,15 +5,12 @@ Production: gunicorn --bind 0.0.0.0:8765 --workers 1 --threads 4 server:app
 """
 
 import argparse
-import base64
-import binascii
 from datetime import date
 import json
 import math
 import os
 from pathlib import Path
 import re
-import secrets
 import sqlite3
 from socketserver import ThreadingMixIn
 import threading
@@ -167,35 +164,14 @@ class Store:
 
 
 class Application:
-    def __init__(self, path, username="", password=""):
-        if bool(username) != bool(password):
-            raise ValueError("Set both VIGOR_USERNAME and VIGOR_PASSWORD, or neither for local-only use.")
+    def __init__(self, path):
         self.store = Store(path)
-        self.username = username
-        self.password = password
-
-    def authorized(self, environ):
-        if not self.password:
-            return True
-        header = environ.get("HTTP_AUTHORIZATION", "")
-        try:
-            scheme, encoded = header.split(" ", 1)
-            if scheme.lower() != "basic":
-                return False
-            username, password = base64.b64decode(encoded, validate=True).decode("utf-8").split(":", 1)
-            return (secrets.compare_digest(username.encode(), self.username.encode())
-                    and secrets.compare_digest(password.encode(), self.password.encode()))
-        except (ValueError, UnicodeDecodeError, binascii.Error):
-            return False
 
     def __call__(self, environ, start_response):
         headers = [("Cache-Control", "no-store"), ("X-Content-Type-Options", "nosniff")]
         status = 200
         content_type = "application/json; charset=utf-8"
         try:
-            if not self.authorized(environ):
-                headers.append(("WWW-Authenticate", 'Basic realm="Vigor", charset="UTF-8"'))
-                raise APIError(401, "请登录")
             path = environ.get("PATH_INFO", "/")
             method = environ.get("REQUEST_METHOD", "GET")
             if path == "/api/projects":
@@ -240,7 +216,7 @@ class Application:
             body = {"error": "数据库暂时不可用，请稍后重试；本次修改未保存"}
         if not isinstance(body, bytes):
             body = json.dumps(body, ensure_ascii=False, allow_nan=False).encode("utf-8")
-        reasons = {200: "OK", 400: "Bad Request", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found",
+        reasons = {200: "OK", 400: "Bad Request", 403: "Forbidden", 404: "Not Found",
                    405: "Method Not Allowed", 409: "Conflict", 413: "Content Too Large",
                    415: "Unsupported Media Type", 503: "Service Unavailable"}
         start_response(f"{status} {reasons[status]}", headers + [("Content-Type", content_type), ("Content-Length", str(len(body)))])
@@ -255,8 +231,7 @@ def app(environ, start_response):
     global _application
     with _lock:
         if _application is None:
-            _application = Application(os.environ.get("VIGOR_DB_PATH", ROOT / "data/vigor.sqlite"),
-                                       os.environ.get("VIGOR_USERNAME", ""), os.environ.get("VIGOR_PASSWORD", ""))
+            _application = Application(os.environ.get("VIGOR_DB_PATH", ROOT / "data/vigor.sqlite"))
     return _application(environ, start_response)
 
 
@@ -275,7 +250,7 @@ if __name__ == "__main__":
         Store(args.db).backup(args.backup)
         print(f"Backup saved: {Path(args.backup).resolve()}")
     else:
-        _application = Application(args.db, os.environ.get("VIGOR_USERNAME", ""), os.environ.get("VIGOR_PASSWORD", ""))
+        _application = Application(args.db)
         with make_server(args.host, args.port, app, server_class=ThreadedServer) as httpd:
             print(f"Vigor: http://{args.host}:{httpd.server_port} | SQLite: {_application.store.path}", flush=True)
             try:
